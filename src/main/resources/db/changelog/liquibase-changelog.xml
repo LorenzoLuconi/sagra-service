@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd"
+>
+
+    <changeSet id="1" author="Lorenzo Luconi Trombacchi">
+
+        <createTable tableName="reparti">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+
+            <column name="nome" type="varchar(32)" >
+                <constraints nullable="false" />
+            </column>
+
+        </createTable>
+
+        <createTable tableName="menu">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+
+            <column name="nome" type="varchar(32)" >
+                <constraints nullable="false" />
+            </column>
+
+        </createTable>
+
+        <createTable tableName="prodotti">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+
+            <column name="nome" type="varchar(255)" >
+                <constraints nullable="false" unique="true"/>
+            </column>
+
+            <column name="note" type="varchar(255)" >
+                <constraints nullable="true" />
+            </column>
+
+            <column name="reparto" type="bigint" >
+                <constraints referencedTableName="reparti" referencedColumnNames="id" foreignKeyName="fk_prodotti_reparti" nullable="true" />
+            </column>
+
+            <column name="menu" type="bigint" >
+                <constraints referencedTableName="menu" referencedColumnNames="id" foreignKeyName="fk_prodotti_menu" nullable="false" />
+            </column>
+
+            <column name="prezzo" type="decimal(6,2)" >
+                <constraints nullable="false" />
+            </column>
+
+            <column name="blocca_vendita" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="last_update" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="magazzino">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+
+            <column name="prodotto" type="bigint" >
+                <constraints referencedTableName="prodotti" referencedColumnNames="id" foreignKeyName="fk_magazzino_prodotto" nullable="false" />
+            </column>
+
+            <column name="quantita" type="integer" >
+                <constraints nullable="false" />
+            </column>
+
+            <column name="data_riferimento" type="date">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+
+        </createTable>
+
+        <createIndex tableName="magazzino" indexName="idx_magazzino_data_prodotto">
+            <column name="data_riferimento"/>
+            <column name="prodotto"/>
+        </createIndex>
+
+        <createTable tableName="disponibilita_prodotti">
+            <column name="prodotto" type="bigint" >
+                <constraints referencedTableName="prodotti" referencedColumnNames="id" foreignKeyName="fk_disponibilita_prodotto" nullable="false" />
+            </column>
+            <column name="quantita" type="integer">
+                <constraints nullable="false"/>
+            </column>
+            <column name="data_riferimento" type="date">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="disponibilita_prodotti" indexName="idx_disponibilita_prodotti_data_prodotto" unique="true">
+            <column name="data_riferimento"/>
+            <column name="prodotto"/>
+        </createIndex>
+
+        <createTable tableName="ordini">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+
+            <column name="nome" type="varchar(128)" />
+
+            <column name="note" type="varchar(255)" />
+
+            <column name="asporto" type="boolean" defaultValue="false" >
+                <constraints nullable="false" />
+            </column>
+
+            <column name="coperti" type="integer" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="costo_coperti" type="decimal(6,2)" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="last_update" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="prodotti_ordinati">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="ordine" type="bigint" >
+                <constraints referencedTableName="ordini" referencedColumnNames="id" foreignKeyName="fk_scorte_prodotti_ordine" nullable="false" />
+            </column>
+            <column name="prodotto" type="bigint" >
+                <constraints referencedTableName="prodotti" referencedColumnNames="id" foreignKeyName="fk_scorte_prodotti_prodotto" nullable="false" />
+            </column>
+            <column name="prezzo" type="decimal(6,2)" >
+                <constraints nullable="false" />
+            </column>
+            <column name="quantita" type="integer" >
+                <constraints nullable="false" />
+            </column>
+            <column name="note" type="varchar(255)" />
+            <column name="created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_update" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

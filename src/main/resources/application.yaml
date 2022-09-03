@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: @project.name@
+  liquibase:
+    change-log: classpath:/db/changelog/liquibase-changelog.xml
+  profiles:
+    active: h2
+  jackson:
+    default-property-inclusion: non_null
+  mvc:
+    log-resolved-exception: false
+  jpa:
+    open-in-view: false
+
+
+---
+spring:
+  config:
+    activate:
+      on-profile: h2
+  sql:
+    init:
+      platform: h2
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL
+    username: sa
+    password: test
+  h2:
+    console:
+      enabled: true
