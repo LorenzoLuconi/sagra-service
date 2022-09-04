@@ -7,6 +7,23 @@
 
     <changeSet id="1" author="Lorenzo Luconi Trombacchi">
 
+        <createTable tableName="utenti" >
+            <column name="username" type="varchar(32)">
+                <constraints primaryKey="true" />
+            </column>
+            <column name="password" type="varchar(128)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="last_update" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
         <createTable tableName="reparti">
             <column name="id" type="bigint" autoIncrement="true">
                 <constraints nullable="false" primaryKey="true"/>
@@ -133,6 +150,10 @@
                 <constraints nullable="false" />
             </column>
 
+<!--            <column name="utente" type="varchar(32)" >-->
+<!--                <constraints referencedTableName="utenti" referencedColumnNames="username" foreignKeyName="fk_ordini_utenti" nullable="false" />-->
+<!--            </column>-->
+
             <column name="created" type="datetime">
                 <constraints nullable="false"/>
             </column>
@@ -166,5 +187,7 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
+
+
     </changeSet>
 </databaseChangeLog>
