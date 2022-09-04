@@ -28,10 +28,12 @@ public class ProdottoOrdinato {
 
     @NotNull
     @ManyToOne
+    @JoinColumn(name = "ordine")
     private Ordine ordine;
 
     @NotNull
     @ManyToOne
+    @JoinColumn(name = "prodotto")
     private Prodotto prodotto;
 
     @NotNull

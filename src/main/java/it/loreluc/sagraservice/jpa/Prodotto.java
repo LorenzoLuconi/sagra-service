@@ -35,9 +35,11 @@ public class Prodotto {
     private String note;
 
     @ManyToOne
+    @JoinColumn(name = "reparto")
     private Reparto reparto;
 
     @ManyToOne
+    @JoinColumn(name = "menu")
     private Menu menu;
 
     @NotNull
