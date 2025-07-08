@@ -1,7 +1,7 @@
 package it.loreluc.sagraservice.product;
 
 import com.querydsl.jpa.impl.JPAQuery;
-import it.loreluc.sagraservice.error.SagraNotFoundException;
+import it.loreluc.sagraservice.error.EntityConflictException;
 import it.loreluc.sagraservice.jpa.Product;
 import it.loreluc.sagraservice.jpa.ProductQuantity;
 import it.loreluc.sagraservice.jpa.QProduct;
@@ -12,6 +12,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -54,6 +55,10 @@ public class ProductService {
     public Product create(ProductRequest productRequest) {
         final Product product = productMapper.toEntity(productRequest);
 
+        if (productRepository.existsByNameIgnoreCase(product.getName())) {
+            throw new EntityConflictException(String.format("Prodotto con il nome '%s' già esistente", productRequest.getName()));
+        }
+
         final ProductQuantity productQuantity = new ProductQuantity();
         productQuantity.setProduct(product);
         productQuantity.setQuantity(0);
@@ -63,7 +68,7 @@ public class ProductService {
         return productRepository.save(product);
     }
 
-    @Transactional(rollbackFor = Throwable.class) // Da valutare la propagazione
+    @Transactional(rollbackFor = Throwable.class)
     public Product update(Long productId, ProductRequest productRequest) {
         final Product product = findById(productId);
         productMapper.update(product, productRequest);
@@ -71,21 +76,30 @@ public class ProductService {
         return productRepository.save(product);
     }
 
-    @Transactional(rollbackFor = Throwable.class) // Da valutare la propagazione
-    public boolean updateQuantity(Long prodottoId, Integer quantitaRichiesta) {
-        final Product product = productRepository.findById(prodottoId).orElseThrow(() -> new SagraNotFoundException("Prodotto non trovato: id=" + prodottoId));
-        return updateQuantita(product, quantitaRichiesta);
+    @Transactional(rollbackFor = Throwable.class)
+    public boolean updateProductQuantity(Long prodottoId, Integer quantityVariation) {
+        return updateProductQuantity(findById(prodottoId), quantityVariation);
+    }
+
+    @Transactional(rollbackFor = Throwable.class, propagation = Propagation.MANDATORY)
+    public boolean updateProductQuantity(Product product, Integer quantityVariation) {
+        final int updated = entityManager.createQuery("""
+            update ProductQuantity pq set pq.quantity = pq.quantity + :quantityVariation
+            where pq.product.id = :prodottoId and pq.quantity + :quantityVariation >= 0
+            """)
+                .setParameter("prodottoId", product.getId())
+                .setParameter("quantityVariation", quantityVariation)
+                .executeUpdate();
+
+        return updated == 1;
     }
 
     @Transactional(rollbackFor = Throwable.class)
-    public boolean updateQuantita(Product product, Integer aggQuantita) {
-        return false;
+    public Product sellLock(Long productId, boolean locked) {
+        final Product product = findById(productId);
 
-//        final int updated = entityManager.createQuery("update DisponibilitaProdotti m set m.quantita = m.quantita + :aggQuantita where m.id = :prodottoId and m.quantita + :aggQuantita >= 0")
-//                .setParameter("prodottoId", product.getId())
-//                .setParameter("aggQuantita", aggQuantita)
-//                .executeUpdate();
-//
-//            return updated == 1;
+        product.setSellLocked(locked);
+
+        return productRepository.save(product);
     }
 }

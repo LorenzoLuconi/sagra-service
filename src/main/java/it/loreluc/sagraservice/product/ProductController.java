@@ -1,6 +1,8 @@
 package it.loreluc.sagraservice.product;
 
+import it.loreluc.sagraservice.error.SagraQuantitaNonSufficiente;
 import it.loreluc.sagraservice.product.resource.ProductMapper;
+import it.loreluc.sagraservice.product.resource.ProductQuantityRequest;
 import it.loreluc.sagraservice.product.resource.ProductRequest;
 import it.loreluc.sagraservice.product.resource.ProductResponse;
 import jakarta.validation.Valid;
@@ -38,6 +40,25 @@ public class ProductController {
     @PutMapping("/{productId}")
     public ProductResponse updateProduct(@PathVariable Long productId, @RequestBody @Valid ProductRequest productRequest) {
        return productMapper.toResource(productService.update(productId, productRequest));
+    }
+
+    @PutMapping("/{productId}/sellLock")
+    public ProductResponse sellLockProduct(@PathVariable Long productId) {
+        return productMapper.toResource(productService.sellLock(productId, true));
+    }
+
+    @PutMapping("/{productId}/sellUnlock")
+    public ProductResponse sellUnLockProduct(@PathVariable Long productId) {
+        return productMapper.toResource(productService.sellLock(productId, false));
+    }
+
+    @PutMapping("/{productId}/updateQuantity")
+    public ProductResponse updateProductQuantity(@PathVariable Long productId, @RequestBody @Valid ProductQuantityRequest productQuantityRequest) {
+        if ( productService.updateProductQuantity(productId, productQuantityRequest.getQuantityVariation())) {
+            return productMapper.toResource(productService.findById(productId));
+        } else {
+            throw new SagraQuantitaNonSufficiente();
+        }
     }
 
     @DeleteMapping("/{productId}")
