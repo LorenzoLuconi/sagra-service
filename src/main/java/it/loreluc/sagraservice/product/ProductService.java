@@ -3,6 +3,7 @@ package it.loreluc.sagraservice.product;
 import com.querydsl.jpa.impl.JPAQuery;
 import it.loreluc.sagraservice.error.SagraNotFoundException;
 import it.loreluc.sagraservice.jpa.Product;
+import it.loreluc.sagraservice.jpa.ProductQuantity;
 import it.loreluc.sagraservice.jpa.QProduct;
 import it.loreluc.sagraservice.product.resource.ProductMapper;
 import it.loreluc.sagraservice.product.resource.ProductRequest;
@@ -49,9 +50,23 @@ public class ProductService {
         return query.fetch();
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Throwable.class) // Da valutare la propagazione
     public Product create(ProductRequest productRequest) {
         final Product product = productMapper.toEntity(productRequest);
+
+        final ProductQuantity productQuantity = new ProductQuantity();
+        productQuantity.setProduct(product);
+        productQuantity.setQuantity(0);
+
+        product.setProductQuantity(productQuantity);
+
+        return productRepository.save(product);
+    }
+
+    @Transactional(rollbackFor = Throwable.class) // Da valutare la propagazione
+    public Product update(Long productId, ProductRequest productRequest) {
+        final Product product = findById(productId);
+        productMapper.update(product, productRequest);
 
         return productRepository.save(product);
     }

@@ -37,8 +37,7 @@ public class ProductController {
 
     @PutMapping("/{productId}")
     public ProductResponse updateProduct(@PathVariable Long productId, @RequestBody @Valid ProductRequest productRequest) {
-        // TODO
-        return null;
+       return productMapper.toResource(productService.update(productId, productRequest));
     }
 
     @DeleteMapping("/{productId}")

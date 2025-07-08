@@ -64,7 +64,7 @@
             </column>
 
             <column name="department" type="bigint" >
-                <constraints referencedTableName="departments" referencedColumnNames="id" foreignKeyName="fk_products_dep" nullable="true" />
+                <constraints referencedTableName="departments" referencedColumnNames="id" foreignKeyName="fk_products_dep" nullable="false" />
             </column>
 
             <column name="menu" type="bigint" >
@@ -90,7 +90,7 @@
 
         <createTable tableName="products_quantity">
             <column name="product" type="bigint" >
-                <constraints referencedTableName="products" referencedColumnNames="id" foreignKeyName="fk_products_quantity" nullable="false" />
+                <constraints referencedTableName="products" referencedColumnNames="id" foreignKeyName="fk_products_quantity" nullable="false" deleteCascade="true"/>
             </column>
             <column name="quantity" type="integer">
                 <constraints nullable="false"/>
@@ -136,7 +136,7 @@
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="order" type="bigint" >
-                <constraints referencedTableName="orders" referencedColumnNames="id" foreignKeyName="fk_orders_products_order" nullable="false" />
+                <constraints referencedTableName="orders" referencedColumnNames="id" foreignKeyName="fk_orders_products_order" nullable="false" deleteCascade="true"/>
             </column>
             <column name="product" type="bigint" >
                 <constraints referencedTableName="products" referencedColumnNames="id" foreignKeyName="fk_orders_products_product" nullable="false" />
