@@ -1,16 +1,14 @@
 package it.loreluc.sagraservice.menu;
 
 import it.loreluc.sagraservice.error.EntityConflictException;
-import it.loreluc.sagraservice.error.SagraBadRequestException;
 import it.loreluc.sagraservice.jpa.Menu;
-import it.loreluc.sagraservice.menu.resource.MenuCreateResource;
 import it.loreluc.sagraservice.menu.resource.MenuMapper;
-import it.loreluc.sagraservice.prodotto.ProdottoRepository;
+import it.loreluc.sagraservice.product.ProductRepository;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityNotFoundException;
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Objects;
 
@@ -18,53 +16,62 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class MenuService {
 
-    private final MenuRepository repository;
-    private final MenuMapper mapper;
+    private final MenuRepository menuRepository;
+    private final MenuMapper menuMapper;
 
-    private final ProdottoRepository prodottoRepository;
+    private final ProductRepository productRepository;
 
     public Menu findById(Long id) {
-        return repository.findById(Objects.requireNonNull(id)).orElseThrow(() -> new EntityNotFoundException("Messun menu trovato con id: " + id));
+        return menuRepository.findById(Objects.requireNonNull(id)).orElseThrow(() -> new EntityNotFoundException("Nessun menu trovato con id: " + id));
     }
 
-    public List<Menu> search(String nome) {
-        if ( nome != null ) {
-            return repository.findAllByNomeContains(nome);
+    @Transactional(rollbackOn = Throwable.class)
+    public Menu create(String nomeMenu) {
+
+        if ( menuRepository.existsByNameContainingIgnoreCase(nomeMenu) ) {
+            throw new EntityConflictException(String.format("Menu con il nome '%s' già esistente", nomeMenu));
+
         }
 
-        return repository.findAll();
+        final Menu menu = new Menu();
+        menu.setName(nomeMenu);
+
+        return menuRepository.save(menu);
     }
 
-    @Transactional
-    public Menu create(MenuCreateResource menuCreateResource) {
-        if ( repository.existsByNomeContainingIgnoreCase(menuCreateResource.getNome()) ) {
-            throw new EntityConflictException("Un altro menu con lo stesso nome già esistente: "+ menuCreateResource.getNome());
-        }
-
-        final Menu menu = mapper.map(menuCreateResource);
-        return repository.save(menu);
-    }
-
-    @Transactional
-    public Menu update(Long id, MenuCreateResource menuCreateResource) {
-        final Menu menu = findById(id);
-
-        if ( repository.existsByNomeContainingIgnoreCaseAndIdNot(menuCreateResource.getNome(), id) ) {
-            throw new EntityConflictException("Un altro menu con lo stesso nome già esistente: "+ menuCreateResource.getNome());
-        }
-
-        mapper.update(menu, menuCreateResource);
-        return repository.save(menu);
-    }
-
-    @Transactional
+    @Transactional(rollbackOn = Throwable.class)
     public void delete(Long id) {
         final Menu menu = findById(id);
 
-        if ( prodottoRepository.existsByMenu(menu) ) {
-            throw new SagraBadRequestException("Sono presenti alcuni prodotti associati al menu: " + menu);
+        if ( productRepository.existsByMenu(menu) ) {
+            throw new EntityConflictException(String.format("Impossibile cancellare il menu '%s' in quanto è referenziato in alcuni prodotti", menu.getName()));
         }
 
-        repository.delete(menu);
+        menuRepository.delete(menu);
     }
+
+    @Transactional(rollbackOn = Throwable.class)
+    public Menu update(Long menuId, String nomeMenu) {
+        final Menu menu = findById(menuId);
+
+        if ( menuRepository.existsByNameContainingIgnoreCaseAndIdNot(nomeMenu, menuId) ) {
+            throw new EntityConflictException(String.format("Menu con il nome '%s' già esistente", nomeMenu));
+        }
+
+        menu.setName(nomeMenu);
+
+        return menuRepository.save(menu);
+    }
+
+
+
+    public List<Menu> search(String nome) {
+        if ( nome == null || nome.isEmpty() ) {
+            return menuRepository.findAll();
+        }
+
+        return menuRepository.findAllByNameContains(nome);
+    }
+
+
  }

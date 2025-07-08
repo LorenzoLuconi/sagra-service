@@ -1,5 +1,10 @@
 package it.loreluc.sagraservice.jpa;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -10,21 +15,22 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotEmpty;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 
 @Entity
-@Table(name = "utenti")
+@Table(name = "users")
 @Getter
 @Setter
 @ToString
 @EntityListeners(AuditingEntityListener.class)
-public class Utente implements UserDetails {
+public class User implements UserDetails {
 
-    @Id @Length(max = 32)
+    @Id
+    private Long id;
+
+    @Length(max = 32)
     private String username;
 
     @NotEmpty
@@ -34,8 +40,7 @@ public class Utente implements UserDetails {
     private LocalDateTime created;
 
     @LastModifiedDate
-    @Column(name = "last_update")
-    private LocalDateTime lastupdate;
+    private LocalDateTime lastUpdate;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

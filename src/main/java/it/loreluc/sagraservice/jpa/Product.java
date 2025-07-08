@@ -1,5 +1,9 @@
 package it.loreluc.sagraservice.jpa;
 
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -8,20 +12,16 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "prodotti")
+@Table(name = "products")
 @Getter
 @Setter
 @ToString
 @EntityListeners(AuditingEntityListener.class)
-public class Prodotto {
+public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,31 +29,33 @@ public class Prodotto {
 
     @NotEmpty
     @Length(max = 255)
-    private String nome;
+    private String name;
 
     @Length(max = 255)
     private String note;
 
     @ManyToOne
-    @JoinColumn(name = "reparto")
-    private Reparto reparto;
+    @JoinColumn(name = "department")
+    private Department department;
 
+    @NotNull
     @ManyToOne
     @JoinColumn(name = "menu")
     private Menu menu;
 
     @NotNull
     @Min(0)
-    private BigDecimal prezzo;
+    private BigDecimal price;
+
+    private boolean sellLocked = false;
 
     @NotNull
-    @Column(name = "blocca_vendita")
-    private boolean bloccaVendita;
+    @OneToOne(fetch = FetchType.EAGER, mappedBy = "product", cascade = {CascadeType.REMOVE, CascadeType.PERSIST})
+    private ProductQuantity productQuantity;
 
     @CreatedDate
     private LocalDateTime created;
 
     @LastModifiedDate
-    @Column(name = "last_update")
-    private LocalDateTime lastupdate;
+    private LocalDateTime lastUpdate;
 }

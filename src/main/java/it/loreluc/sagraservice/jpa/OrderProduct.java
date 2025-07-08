@@ -1,6 +1,9 @@
 package it.loreluc.sagraservice.jpa;
 
 
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -9,40 +12,36 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "prodotti_ordinati")
+@Table(name = "orders_products")
 @Getter
 @Setter
 @ToString
 @EntityListeners(AuditingEntityListener.class)
-public class ProdottoOrdinato {
+public class OrderProduct {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotNull
     @ManyToOne
-    @JoinColumn(name = "ordine")
-    private Ordine ordine;
+    private Order order;
 
     @NotNull
     @ManyToOne
-    @JoinColumn(name = "prodotto")
-    private Prodotto prodotto;
+    @JoinColumn(name = "product")
+    private Product product;
 
     @NotNull
     @Min(0)
-    private BigDecimal prezzo;
+    private BigDecimal price;
 
     @NotNull
-    @Min(0)
-    private Integer quantita;
+    @Min(1)
+    private Integer quantity;
 
     @Length(max=255)
     private String note;
@@ -51,6 +50,5 @@ public class ProdottoOrdinato {
     private LocalDateTime created;
 
     @LastModifiedDate
-    @Column(name = "last_update")
-    private LocalDateTime lastupdate;
+    private LocalDateTime lastUpdate;
 }

@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class MenuResource {
     private Long id;
-    private String nome;
+    private String name;
 }
