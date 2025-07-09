@@ -11,7 +11,16 @@ spring:
     log-resolved-exception: false
   jpa:
     open-in-view: false
-
+sagra-service:
+  cors:
+    allowed-methods:
+      - GET
+      - PUT
+      - POST
+      - DELETE
+    allowed-origins:
+      - http://localhost:3000
+    max-age: 86400
 
 ---
 spring:
