@@ -28,14 +28,14 @@ import static it.loreluc.sagraservice.error.InvalidProduct.InvalidStatus.NOT_ENO
 @Slf4j
 public class OrderService {
 
-    private final OrderMapper ordineMapper;
+    private final OrderMapper orderMapper;
     private final OrderRepository orderRepository;
     private final ProductService productService;
     private final SagraSettings settings;
     private final UsersRepository usersRepository;
 
-    public Order getOrderById(Long ordineId) {
-        return orderRepository.findById(ordineId).orElseThrow(() -> new SagraNotFoundException("Nessun ordine trovato con l'id: " + ordineId));
+    public Order getOrderById(Long orderId) {
+        return orderRepository.findById(orderId).orElseThrow(() -> new SagraNotFoundException("Nessun ordine trovato con l'id: " + orderId));
     }
 
     @Transactional(rollbackFor = Throwable.class)
@@ -46,7 +46,7 @@ public class OrderService {
             throw new SagraBadRequestException("Ordine da asporto non può avere dei coperti");
         }
 
-        final Order order = ordineMapper.toEntity(orderRequest);
+        final Order order = orderMapper.toEntity(orderRequest);
 
         if ( ! order.isTakeAway() && order.getServiceNumber() > 0 ) {
             if ( settings.getServiceCost().compareTo(BigDecimal.ZERO) > 0 ) {
@@ -96,5 +96,19 @@ public class OrderService {
         );
 
         return orderRepository.save(order);
+    }
+
+    @Transactional(rollbackFor = Throwable.class)
+    public void deleteOrder(Long orderId) {
+        final Order order = getOrderById(orderId);
+
+        order.getOrderedProducts().forEach(op -> {
+            if ( ! productService.updateProductQuantity(op.getProduct(), op.getQuantity()) ) {
+                log.error("Nella cancellazione di un ordine non dovrebbe mai esserci un errore durante la restituzione della quantità: {}, {}", order, op);
+                throw new RuntimeException("Si è verificato un errore inatteso nella cancellazione dell'ordine: " + orderId);
+            }
+        });
+
+        orderRepository.delete(order);
     }
 }

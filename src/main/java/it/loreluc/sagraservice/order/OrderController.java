@@ -36,6 +36,6 @@ public class OrderController {
     @DeleteMapping("/{orderId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteOrderById(@PathVariable Long orderId) {
-
+        orderService.deleteOrder(orderId);
     }
 }
