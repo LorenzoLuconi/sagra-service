@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static it.loreluc.sagraservice.error.InvalidProduct.InvalidStatus.NOT_ENOUGH_QUANTITY;
+import static it.loreluc.sagraservice.error.InvalidProduct.ProductError.NOT_ENOUGH_QUANTITY;
 
 @RequiredArgsConstructor
 @RestController

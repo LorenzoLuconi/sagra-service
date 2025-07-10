@@ -2,7 +2,8 @@ package it.loreluc.sagraservice.product;
 
 import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQuery;
-import it.loreluc.sagraservice.error.EntityConflictException;
+import it.loreluc.sagraservice.error.SagraConflictException;
+import it.loreluc.sagraservice.error.SagraNotFoundException;
 import it.loreluc.sagraservice.jpa.Product;
 import it.loreluc.sagraservice.jpa.ProductQuantity;
 import it.loreluc.sagraservice.jpa.QOrderProduct;
@@ -10,7 +11,6 @@ import it.loreluc.sagraservice.jpa.QProduct;
 import it.loreluc.sagraservice.product.resource.ProductMapper;
 import it.loreluc.sagraservice.product.resource.ProductRequest;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,10 +27,9 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final EntityManager entityManager;
     private final ProductMapper productMapper;
-    private final EntityManager em;
 
     public Product findById(Long id) {
-        return productRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Prodotto non trovato con id: " + id));
+        return productRepository.findById(id).orElseThrow(() -> new SagraNotFoundException("Prodotto non trovato con id: " + id));
     }
 
     public List<Product> search(ProductSearchRequest searchRequest) {
@@ -59,7 +58,7 @@ public class ProductService {
         final Product product = productMapper.toEntity(productRequest);
 
         if (productRepository.existsByNameIgnoreCase(product.getName())) {
-            throw new EntityConflictException(String.format("Prodotto con il nome '%s' già esistente", productRequest.getName()));
+            throw new SagraConflictException(String.format("Prodotto con il nome '%s' già esistente", productRequest.getName()));
         }
 
         final ProductQuantity productQuantity = new ProductQuantity();
@@ -116,7 +115,7 @@ public class ProductService {
                 .where(q.product.id.eq(productId)).fetchOne();
 
         if ( count != null && count > 0 ) {
-            throw new EntityNotFoundException(String.format("Impossibile rimuovere il prodotto in quanto è referenziato in %s ordini", count));
+            throw new SagraNotFoundException(String.format("Impossibile rimuovere il prodotto in quanto è referenziato in %s ordini", count));
         }
 
         productRepository.delete(product);

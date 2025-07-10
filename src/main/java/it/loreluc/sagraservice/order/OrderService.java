@@ -2,10 +2,7 @@ package it.loreluc.sagraservice.order;
 
 import com.querydsl.jpa.impl.JPAQuery;
 import it.loreluc.sagraservice.config.SagraSettings;
-import it.loreluc.sagraservice.error.InvalidProduct;
-import it.loreluc.sagraservice.error.SagraBadRequestException;
-import it.loreluc.sagraservice.error.SagraNotFoundException;
-import it.loreluc.sagraservice.error.SagraQuantitaNonSufficiente;
+import it.loreluc.sagraservice.error.*;
 import it.loreluc.sagraservice.jpa.Order;
 import it.loreluc.sagraservice.jpa.OrderProduct;
 import it.loreluc.sagraservice.jpa.Product;
@@ -15,7 +12,6 @@ import it.loreluc.sagraservice.order.resource.OrderRequest;
 import it.loreluc.sagraservice.product.ProductService;
 import it.loreluc.sagraservice.security.UsersRepository;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -31,8 +27,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static it.loreluc.sagraservice.error.InvalidProduct.InvalidStatus.LOCKED;
-import static it.loreluc.sagraservice.error.InvalidProduct.InvalidStatus.NOT_ENOUGH_QUANTITY;
+import static it.loreluc.sagraservice.error.InvalidProduct.ProductError.LOCKED;
+import static it.loreluc.sagraservice.error.InvalidProduct.ProductError.NOT_ENOUGH_QUANTITY;
 
 @Service
 @RequiredArgsConstructor
@@ -172,8 +168,10 @@ public class OrderService {
         }
 
         if ( orderRequest.isTakeAway() && orderRequest.getServiceNumber() > 0 ) {
-            log.warn("Tentativo di creare/aggiornare un ordine da asporto con indicazione dei coperti: {}", orderRequest);
-            throw new SagraBadRequestException("Ordine da asporto non può avere dei coperti");
+            log.debug("Tentativo di creare/aggiornare un ordine da asporto con indicazione dei coperti: {}", orderRequest);
+            throw new SagraBadRequestException(
+                    InvalidValue.builder().field("serviceNumber").message("Ordine da asporto non può avere dei coperti").build()
+            );
         }
     }
 
@@ -206,8 +204,10 @@ public class OrderService {
         final Product product;
         try {
             product = productService.findById(orderProductRequest.getProductId());
-        } catch ( EntityNotFoundException e) {
-            throw new SagraBadRequestException("Prodotto non trovato con id: " + orderProductRequest.getProductId());
+        } catch ( SagraNotFoundException e) {
+            throw new SagraBadRequestException(
+                    InvalidValue.builder().field("productId").message("Prodotto non trovato").value(orderProductRequest.getProductId()).build()
+            );
         }
 
         if ( product.isSellLocked() ) {

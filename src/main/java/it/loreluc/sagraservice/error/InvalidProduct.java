@@ -1,15 +1,32 @@
 package it.loreluc.sagraservice.error;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Data
-@AllArgsConstructor(staticName = "of")
 public class InvalidProduct {
-    public enum InvalidStatus {
-        NOT_ENOUGH_QUANTITY,
-        LOCKED
+    @RequiredArgsConstructor
+    public enum ProductError {
+        NOT_ENOUGH_QUANTITY("Quantità prodotto non sufficiente"),
+        LOCKED("Prodotto non disponibile per la vendita")
+        ;
+
+        @Getter
+        private final String message;
     }
-    private Long productId;
-    private InvalidStatus status;
+
+    private final Long productId;
+    private final String message;
+    private final ProductError error;
+
+    private InvalidProduct(Long productId, ProductError productError) {
+        this.productId = productId;
+        this.error = productError;
+        this.message = productError.getMessage();
+    }
+
+    public static InvalidProduct of(Long productId, ProductError productError) {
+        return new InvalidProduct(productId, productError);
+    }
 }

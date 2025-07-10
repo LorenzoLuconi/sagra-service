@@ -1,9 +1,9 @@
 package it.loreluc.sagraservice.course;
 
-import it.loreluc.sagraservice.error.EntityConflictException;
+import it.loreluc.sagraservice.error.SagraConflictException;
+import it.loreluc.sagraservice.error.SagraNotFoundException;
 import it.loreluc.sagraservice.jpa.Course;
 import it.loreluc.sagraservice.product.ProductRepository;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,14 +20,14 @@ public class CourseService {
     private final ProductRepository productRepository;
 
     public Course findById(Long id) {
-        return courseRepository.findById(Objects.requireNonNull(id)).orElseThrow(() -> new EntityNotFoundException("Nessuna portata trovato con id: " + id));
+        return courseRepository.findById(Objects.requireNonNull(id)).orElseThrow(() -> new SagraNotFoundException("Nessuna portata trovato con id: " + id));
     }
 
     @Transactional(rollbackOn = Throwable.class)
     public Course create(String nomeportata) {
 
         if ( courseRepository.existsByNameContainingIgnoreCase(nomeportata) ) {
-            throw new EntityConflictException(String.format("Portata con il nome '%s' già esistente", nomeportata));
+            throw new SagraConflictException(String.format("Portata con il nome '%s' già esistente", nomeportata));
 
         }
 
@@ -42,7 +42,7 @@ public class CourseService {
         final Course course = findById(id);
 
         if ( productRepository.existsByCourse(course) ) {
-            throw new EntityConflictException(String.format("Impossibile cancellare la portata '%s' in quanto è referenziata in alcuni prodotti", course.getName()));
+            throw new SagraConflictException(String.format("Impossibile cancellare la portata '%s' in quanto è referenziata in alcuni prodotti", course.getName()));
         }
 
         courseRepository.delete(course);
@@ -53,7 +53,7 @@ public class CourseService {
         final Course course = findById(portataId);
 
         if ( courseRepository.existsByNameContainingIgnoreCaseAndIdNot(nomeportata, portataId) ) {
-            throw new EntityConflictException(String.format("Portata con il nome '%s' già esistente", nomeportata));
+            throw new SagraConflictException(String.format("Portata con il nome '%s' già esistente", nomeportata));
         }
 
         course.setName(nomeportata);

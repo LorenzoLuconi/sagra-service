@@ -1,9 +1,9 @@
 package it.loreluc.sagraservice.department;
 
-import it.loreluc.sagraservice.error.EntityConflictException;
+import it.loreluc.sagraservice.error.SagraConflictException;
+import it.loreluc.sagraservice.error.SagraNotFoundException;
 import it.loreluc.sagraservice.jpa.Department;
 import it.loreluc.sagraservice.product.ProductRepository;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,14 +18,14 @@ public class DepartmentService {
     private final ProductRepository productRepository;
 
     public Department findById(Long departmentId ) {
-        return departmentRepository.findById(Objects.requireNonNull(departmentId)).orElseThrow(() -> new EntityNotFoundException("Nessun reparto trovato con id: " + departmentId));
+        return departmentRepository.findById(Objects.requireNonNull(departmentId)).orElseThrow(() -> new SagraNotFoundException("Nessun reparto trovato con id: " + departmentId));
     }
 
     @Transactional(rollbackOn = Throwable.class)
     public Department create(String departmentName) {
 
         if ( departmentRepository.existsByNameContainingIgnoreCase(departmentName)) {
-            throw new EntityConflictException(String.format("Reparto con il nome '%s' già esistente", departmentName));
+            throw new SagraConflictException(String.format("Reparto con il nome '%s' già esistente", departmentName));
         }
 
         final Department department = new Department();
@@ -39,7 +39,7 @@ public class DepartmentService {
         final Department department = findById(departmentId);
 
         if (productRepository.existsByDepartment(department)) {
-            throw new EntityConflictException(String.format("Impossibile cancellare il reparto '%s' in quanto è referenziato in alcuni prodotti", department.getName()));
+            throw new SagraConflictException(String.format("Impossibile cancellare il reparto '%s' in quanto è referenziato in alcuni prodotti", department.getName()));
         }
 
         departmentRepository.delete(department);
@@ -50,7 +50,7 @@ public class DepartmentService {
         final Department department = findById(departmentId);
 
         if ( departmentRepository.existsByNameContainingIgnoreCaseAndIdNot(departmentName, departmentId) ) {
-            throw new EntityConflictException(String.format("Reparto con il nome '%s' già esistente", departmentName));
+            throw new SagraConflictException(String.format("Reparto con il nome '%s' già esistente", departmentName));
         }
 
         department.setName(departmentName);

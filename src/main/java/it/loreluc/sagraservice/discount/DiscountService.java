@@ -1,9 +1,9 @@
 package it.loreluc.sagraservice.discount;
 
 import it.loreluc.sagraservice.discount.resource.DiscountRequest;
-import it.loreluc.sagraservice.error.EntityConflictException;
+import it.loreluc.sagraservice.error.SagraConflictException;
+import it.loreluc.sagraservice.error.SagraNotFoundException;
 import it.loreluc.sagraservice.jpa.Discount;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,14 +17,14 @@ public class DiscountService {
     private final DiscountRepository discountRepository;
 
     public Discount findById(Long id) {
-        return discountRepository.findById(Objects.requireNonNull(id)).orElseThrow(() -> new EntityNotFoundException("Nessun sconto trovato con id: " + id));
+        return discountRepository.findById(Objects.requireNonNull(id)).orElseThrow(() -> new SagraNotFoundException("Nessun sconto trovato con id: " + id));
     }
 
     @Transactional(rollbackOn = Throwable.class)
     public Discount create(DiscountRequest discountRequest) {
 
         if ( discountRepository.existsByNameIgnoreCase(discountRequest.getName()) ) {
-            throw new EntityConflictException(String.format("Sconto con il nome '%s' già esistente", discountRequest));
+            throw new SagraConflictException(String.format("Sconto con il nome '%s' già esistente", discountRequest));
 
         }
 
