@@ -1,8 +1,14 @@
 package it.loreluc.sagraservice.course;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import it.loreluc.sagraservice.course.resource.CourseMapper;
 import it.loreluc.sagraservice.course.resource.CourseRequest;
 import it.loreluc.sagraservice.course.resource.CourseResource;
+import it.loreluc.sagraservice.error.ErrorResource;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,33 +20,61 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/v1/courses")
 @RequiredArgsConstructor
+@Tag(name = "Portate")
 public class CourseController {
     private final CourseMapper courseMapper;
     private final CourseService courseService;
 
     @GetMapping("/{id}")
-    public CourseResource findOne(@PathVariable("id") Long id) {
+    @Operation(summary = "Tipologia di portata tramite id")
+    @ApiResponse(responseCode = "200")
+    @ApiResponse(responseCode = "401", content = @Content)
+    @ApiResponse(responseCode = "403", content = @Content)
+    @ApiResponse(responseCode = "404", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Portata non trovata")
+    public CourseResource getCourseById(@PathVariable("id") Long id) {
         return courseMapper.toResource(courseService.findById(id));
     }
 
     @GetMapping
-    public List<CourseResource> search(@RequestParam(required = false) String name) {
+    @Operation(summary = "Ricerca tipologia di portate")
+    @ApiResponse(responseCode = "200")
+    @ApiResponse(responseCode = "400", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Richiesta non valida")
+    @ApiResponse(responseCode = "401", content = @Content)
+    @ApiResponse(responseCode = "403", content = @Content)
+    public List<CourseResource> searchCourses(@RequestParam(required = false) @Schema(description = "Ricerca del nome con operatore 'contains'") String name) {
         return courseService.search(name).stream().map(courseMapper::toResource).collect(Collectors.toList());
     }
 
     @PostMapping
-    public CourseResource create(@RequestBody @Valid CourseRequest courseRequest) {
+    @Operation(summary = "Crea un tipologie di portata")
+    @ApiResponse(responseCode = "200")
+    @ApiResponse(responseCode = "400", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Richiesta non valida")
+    @ApiResponse(responseCode = "401", content = @Content)
+    @ApiResponse(responseCode = "403", content = @Content)
+    public CourseResource createCourse(@RequestBody @Valid CourseRequest courseRequest) {
         return courseMapper.toResource(courseService.create(courseRequest.getName()));
     }
 
     @PutMapping("/{id}")
-    public CourseResource update(@PathVariable("id") Long id, @RequestBody @Valid CourseRequest courseRequest) {
+    @Operation(summary = "Modifica una tipologie di portata")
+    @ApiResponse(responseCode = "200")
+    @ApiResponse(responseCode = "400", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Richiesta non valida")
+    @ApiResponse(responseCode = "401", content = @Content)
+    @ApiResponse(responseCode = "403", content = @Content)
+    @ApiResponse(responseCode = "404", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Portata non trovata")
+    public CourseResource updateCourse(@PathVariable("id") Long id, @RequestBody @Valid CourseRequest courseRequest) {
         return courseMapper.toResource(courseService.update(id, courseRequest.getName()));
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable("id") Long id) {
+    @Operation(summary = "Cancella una tipologie di portata")
+    @ApiResponse(responseCode = "204")
+    @ApiResponse(responseCode = "401", content = @Content)
+    @ApiResponse(responseCode = "403", content = @Content)
+    @ApiResponse(responseCode = "404", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Portata non trovata")
+    @ApiResponse(responseCode = "409", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Portata referenziata in alcuni prodotti")
+    public void deleteCourse(@PathVariable("id") Long id) {
         courseService.delete(id);
     }
 }
