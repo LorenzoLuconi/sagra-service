@@ -35,13 +35,13 @@ public class Product {
     private String note;
 
     @ManyToOne
-    @JoinColumn(name = "department")
+    @JoinColumn(name = "department_id")
     private Department department;
 
     @NotNull
     @ManyToOne
-    @JoinColumn(name = "menu")
-    private Menu menu;
+    @JoinColumn(name = "course_id")
+    private Course course;
 
     @NotNull
     @Min(0)

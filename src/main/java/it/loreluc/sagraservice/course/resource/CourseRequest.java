@@ -1,11 +1,11 @@
-package it.loreluc.sagraservice.menu.resource;
+package it.loreluc.sagraservice.course.resource;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
 @Data
-public class MenuRequest {
+public class CourseRequest {
     @NotEmpty
     @Length(max = 32)
     private String name;

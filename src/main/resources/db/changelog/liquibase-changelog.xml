@@ -35,7 +35,7 @@
 
         </createTable>
 
-        <createTable tableName="menu">
+        <createTable tableName="courses">
             <column name="id" type="bigint" autoIncrement="true">
                 <constraints nullable="false" primaryKey="true"/>
             </column>
@@ -59,12 +59,12 @@
                 <constraints nullable="true" />
             </column>
 
-            <column name="department" type="bigint" >
+            <column name="department_id" type="bigint" >
                 <constraints referencedTableName="departments" referencedColumnNames="id" foreignKeyName="fk_products_dep" nullable="false" />
             </column>
 
-            <column name="menu" type="bigint" >
-                <constraints referencedTableName="menu" referencedColumnNames="id" foreignKeyName="fk_prodotti_menu" nullable="false" />
+            <column name="course_id" type="bigint" >
+                <constraints referencedTableName="courses" referencedColumnNames="id" foreignKeyName="fk_products_courses" nullable="false" />
             </column>
 
             <column name="price" type="decimal(6,2)" >

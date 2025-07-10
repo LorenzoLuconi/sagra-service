@@ -1,16 +1,16 @@
 --- password lorenzo in bcrypt
 insert into users values ('lorenzo', '$2a$10$CQViJR5.yIcVJzfeGPMRMeeb9aZbUOCga.MJhbKVaq1ooxIdrF4mm', now(), now());
 
-insert into menu values (1, 'Primi');
-insert into menu values (2, 'Secondi');
-insert into menu values (3, 'Panzanelle');
-insert into menu values (4, 'Bar');
+insert into courses values (1, 'Primi');
+insert into courses values (2, 'Secondi');
+insert into courses values (3, 'Panzanelle');
+insert into courses values (4, 'Bar');
 
 insert into departments values (1, 'Cucina');
 insert into departments values (2, 'Griglia');
 insert into departments values (3, 'Bar');
 
-insert into products (id, name, note, department, menu, price, created, last_update) VALUES
+insert into products (id, name, note, department_id, course_id, price, created, last_update) VALUES
 (1, 'Tordelli', null, 1, 1, 8, now(), now()),
 (2, 'Panzanelle', null, 1, 3, 0.8, now(), now()),
 (3, 'Grigliata Salsicce', null, 2, 1, 4.5, now(), now()),

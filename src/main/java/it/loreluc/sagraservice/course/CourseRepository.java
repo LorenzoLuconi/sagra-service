@@ -1,12 +1,12 @@
-package it.loreluc.sagraservice.menu;
+package it.loreluc.sagraservice.course;
 
-import it.loreluc.sagraservice.jpa.Menu;
+import it.loreluc.sagraservice.jpa.Course;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface MenuRepository extends JpaRepository<Menu, Long> {
-    List<Menu> findAllByNameContains(String nome);
+public interface CourseRepository extends JpaRepository<Course, Long> {
+    List<Course> findAllByNameContains(String nome);
 
     boolean existsByNameContainingIgnoreCaseAndIdNot(String nome, Long id);
     boolean existsByNameContainingIgnoreCase(String nome);

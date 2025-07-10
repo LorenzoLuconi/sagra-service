@@ -19,7 +19,7 @@ public class ProductRequest {
     private Long departmentId;
 
     @NotNull
-    private Long menuId;
+    private Long courseId;
 
     @NotNull
     @Min(0)

@@ -8,11 +8,11 @@ import lombok.ToString;
 import org.hibernate.validator.constraints.Length;
 
 @Entity
-@Table(name = "menu")
+@Table(name = "courses")
 @Getter
 @Setter
 @ToString
-public class Menu {
+public class Course {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

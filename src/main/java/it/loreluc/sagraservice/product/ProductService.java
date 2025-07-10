@@ -40,12 +40,12 @@ public class ProductService {
             query.where(p.name.containsIgnoreCase(searchRequest.getName()));
         }
 
-        if ( searchRequest.getDepartment() != null ) {
-            query.where(p.department.id.eq(searchRequest.getDepartment()));
+        if ( searchRequest.getDepartmentId() != null ) {
+            query.where(p.department.id.eq(searchRequest.getDepartmentId()));
         }
 
-        if ( searchRequest.getMenu() != null ) {
-            query.where(p.menu.id.eq(searchRequest.getMenu()));
+        if ( searchRequest.getCourseId() != null ) {
+            query.where(p.course.id.eq(searchRequest.getCourseId()));
         }
 
         return query.fetch();

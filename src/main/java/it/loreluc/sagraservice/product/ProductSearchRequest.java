@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class ProductSearchRequest {
 
-    private Long menu;
-    private Long department;
+    private Long courseId;
+    private Long departmentId;
     private String name;
 }

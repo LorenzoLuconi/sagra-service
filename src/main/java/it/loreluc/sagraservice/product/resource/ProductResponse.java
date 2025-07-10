@@ -13,7 +13,7 @@ public class ProductResponse {
     private String name;
     private String note;
     private Long departmentId;
-    private Long menuId;
+    private Long courseId;
     private BigDecimal price;
     private boolean sellLocked;
     private Integer quantity;
