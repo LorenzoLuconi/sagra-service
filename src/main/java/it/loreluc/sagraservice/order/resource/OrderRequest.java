@@ -1,5 +1,6 @@
 package it.loreluc.sagraservice.order.resource;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -11,6 +12,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Data
+@Schema(name = "OrderedProductRequest")
 public class OrderRequest {
 
     @NotEmpty

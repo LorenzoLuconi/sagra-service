@@ -47,7 +47,8 @@ public class OrderService {
     }
 
     @Transactional(rollbackFor = Throwable.class)
-    public Order createOrder(OrderRequest orderRequest) {
+    public Order
+    createOrder(OrderRequest orderRequest) {
 
         validateOrderRequest(orderRequest);
         final Order order = orderMapper.toEntity(orderRequest);
@@ -140,18 +141,18 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    public List<Order> searchOrders(SearchOrderParams searchOrderParams, Pageable pageable) {
+    public List<Order> searchOrders(SearchOrderRequest searchOrderRequest, Pageable pageable) {
         final QOrder o = QOrder.order;
         final JPAQuery<Order> query = new JPAQuery<Order>(em)
                 .select(o)
                 .from(o);
 
-        if ( searchOrderParams.getCustomer() != null && ! searchOrderParams.getCustomer().isEmpty()) {
-            query.where(o.customer.containsIgnoreCase(searchOrderParams.getCustomer()));
+        if ( searchOrderRequest.getCustomer() != null && ! searchOrderRequest.getCustomer().isEmpty()) {
+            query.where(o.customer.containsIgnoreCase(searchOrderRequest.getCustomer()));
         }
 
-        if ( searchOrderParams.getUsername() != null && ! searchOrderParams.getUsername().isEmpty()) {
-            query.where(o.user.username.eq(searchOrderParams.getUsername()));
+        if ( searchOrderRequest.getUsername() != null && ! searchOrderRequest.getUsername().isEmpty()) {
+            query.where(o.user.username.eq(searchOrderRequest.getUsername()));
         }
 
         query.offset(pageable.getOffset());

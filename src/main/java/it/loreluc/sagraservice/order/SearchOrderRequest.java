@@ -1,4 +1,4 @@
-package it.loreluc.sagraservice.product;
+package it.loreluc.sagraservice.order;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -6,11 +6,9 @@ import org.springdoc.core.annotations.ParameterObject;
 
 @Data
 @ParameterObject
-public class ProductSearchRequest {
-
-    private Long courseId;
-    private Long departmentId;
-
+public class SearchOrderRequest {
     @Schema(description = "Ricerca con operatore 'contains'")
-    private String name;
+    private String customer;
+
+    private String username;
 }

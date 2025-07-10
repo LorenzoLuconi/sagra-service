@@ -1,12 +1,14 @@
 package it.loreluc.sagraservice.product.resource;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
+@Schema(name="Product")
 public class ProductResponse {
 
     private Long id;

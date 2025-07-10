@@ -1,6 +1,7 @@
 package it.loreluc.sagraservice.order.resource;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@Schema(name = "Order")
 public class OrderResponse {
 
     private Long id;

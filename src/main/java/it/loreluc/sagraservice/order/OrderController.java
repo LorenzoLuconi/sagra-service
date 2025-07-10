@@ -1,9 +1,16 @@
 package it.loreluc.sagraservice.order;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import it.loreluc.sagraservice.error.ErrorResource;
 import it.loreluc.sagraservice.order.resource.OrderRequest;
 import it.loreluc.sagraservice.order.resource.OrderResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -13,36 +20,61 @@ import java.util.List;
 @RestController
 @RequestMapping("/v1/orders")
 @RequiredArgsConstructor
+@Tag(name="Ordini")
 public class OrderController {
 
     private final OrderMapper orderMapper;
     private final OrderService orderService;
 
     @GetMapping("/{orderId}")
-    public OrderResponse getOrderById(@PathVariable Long orderId) {
+    @Operation(summary = "Ordine tramite id")
+    @ApiResponse(responseCode = "200")
+    @ApiResponse(responseCode = "401", content = @Content)
+    @ApiResponse(responseCode = "403", content = @Content)
+    @ApiResponse(responseCode = "404", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Ordine non trovato")
+    public OrderResponse orderById(@PathVariable Long orderId) {
         return orderMapper.toResponse(orderService.getOrderById(orderId));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public OrderResponse createOrder(@RequestBody @Valid OrderRequest orderRequest) {
+    @Operation(summary = "Crea un ordine")
+    @ApiResponse(responseCode = "201")
+    @ApiResponse(responseCode = "401", content = @Content)
+    @ApiResponse(responseCode = "403", content = @Content)
+    @ApiResponse(responseCode = "450", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Alcuni prodotti sono bloccati alla vendita o quantità insufficiente")
+    public OrderResponse orderCreate(@RequestBody @Valid OrderRequest orderRequest) {
         return orderMapper.toResponse(orderService.createOrder(orderRequest));
     }
 
     @GetMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public List<OrderResponse> searchOrders(SearchOrderParams searchOrderParams, Pageable pageable) {
-        return orderService.searchOrders(searchOrderParams, pageable).stream().map(orderMapper::toResponse).toList();
+    @Operation(summary = "Ricerca una ordine")
+    @ApiResponse(responseCode = "200")
+    @ApiResponse(responseCode = "400", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Richiesta non valida")
+    @ApiResponse(responseCode = "401", content = @Content)
+    @ApiResponse(responseCode = "403", content = @Content)
+    public List<OrderResponse> ordersSearch(SearchOrderRequest searchOrderRequest, @ParameterObject Pageable pageable) {
+        return orderService.searchOrders(searchOrderRequest, pageable).stream().map(orderMapper::toResponse).toList();
     }
 
     @DeleteMapping("/{orderId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteOrderById(@PathVariable Long orderId) {
+    @Operation(summary = "Cancella un ordine")
+    @ApiResponse(responseCode = "204")
+    @ApiResponse(responseCode = "401", content = @Content)
+    @ApiResponse(responseCode = "403", content = @Content)
+    public void orderDelete(@PathVariable Long orderId) {
         orderService.deleteOrder(orderId);
     }
 
     @PutMapping("/{orderId}")
-    public OrderResponse updateOrderById(@PathVariable Long orderId, @RequestBody @Valid OrderRequest orderRequest) {
+    @Operation(summary = "Crea un ordine")
+    @ApiResponse(responseCode = "200")
+    @ApiResponse(responseCode = "401", content = @Content)
+    @ApiResponse(responseCode = "403", content = @Content)
+    @ApiResponse(responseCode = "404", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Ordine non trovato")
+    @ApiResponse(responseCode = "450", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Alcuni prodotti sono bloccati alla vendita o quantità insufficiente")
+    public OrderResponse orderUpdate(@PathVariable Long orderId, @RequestBody @Valid OrderRequest orderRequest) {
         return orderMapper.toResponse(orderService.updateOrder(orderId, orderRequest));
     }
 }

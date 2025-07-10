@@ -32,7 +32,7 @@ public class DepartmentController {
     @ApiResponse(responseCode = "401", content = @Content)
     @ApiResponse(responseCode = "403", content = @Content)
     @ApiResponse(responseCode = "404", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Reparto trovata")
-    public DepartmentResource getDepartmentById(@PathVariable("departmentId") Long id) {
+    public DepartmentResource departmentById(@PathVariable("departmentId") Long id) {
         return departmentMapper.toResource(departmentService.findById(id));
     }
 
@@ -43,7 +43,8 @@ public class DepartmentController {
     @ApiResponse(responseCode = "401", content = @Content)
     @ApiResponse(responseCode = "403", content = @Content)
     @ApiResponse(responseCode = "404", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Reparto non trovata")
-    public DepartmentResource updateDepartment(@PathVariable("departmentId") Long id, @RequestBody @Valid DepartmentRequest departmentRequest) {
+    @ApiResponse(responseCode = "409", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Reparto con il medesimo nome già esistente")
+    public DepartmentResource departmentUpdate(@PathVariable("departmentId") Long id, @RequestBody @Valid DepartmentRequest departmentRequest) {
         return departmentMapper.toResource(departmentService.update(id, departmentRequest.getName()));
     }
 
@@ -53,18 +54,19 @@ public class DepartmentController {
     @ApiResponse(responseCode = "400", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Richiesta non valida")
     @ApiResponse(responseCode = "401", content = @Content)
     @ApiResponse(responseCode = "403", content = @Content)
-    public List<DepartmentResource> searchDepartments(@RequestParam(required = false) @Schema(description = "Ricerca del nome con operatore 'contains'") String name) {
+    public List<DepartmentResource> departmentsSearch(@RequestParam(required = false) @Schema(description = "Ricerca del nome con operatore 'contains'") String name) {
         return departmentService.search(name).stream().map(departmentMapper::toResource).collect(Collectors.toList());
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Crea un reparto")
-    @ApiResponse(responseCode = "200")
+    @ApiResponse(responseCode = "201")
     @ApiResponse(responseCode = "400", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Richiesta non valida")
     @ApiResponse(responseCode = "401", content = @Content)
     @ApiResponse(responseCode = "403", content = @Content)
-    public DepartmentResource createDepartment(@RequestBody @Valid DepartmentRequest departmentRequest) {
+    @ApiResponse(responseCode = "409", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Reparto con il medesimo nome già esistente")
+    public DepartmentResource departmentCreate(@RequestBody @Valid DepartmentRequest departmentRequest) {
         return departmentMapper.toResource(departmentService.create(departmentRequest.getName()));
     }
 
@@ -76,7 +78,7 @@ public class DepartmentController {
     @ApiResponse(responseCode = "403", content = @Content)
     @ApiResponse(responseCode = "404", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Reparto non trovata")
     @ApiResponse(responseCode = "409", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Reparto referenziato in alcuni prodotti")
-    public void deleteDepartment(@PathVariable Long departmentId) {
+    public void departmentDelete(@PathVariable Long departmentId) {
         departmentService.delete(departmentId);
     }
 }

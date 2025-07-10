@@ -31,7 +31,7 @@ public class CourseController {
     @ApiResponse(responseCode = "401", content = @Content)
     @ApiResponse(responseCode = "403", content = @Content)
     @ApiResponse(responseCode = "404", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Portata non trovata")
-    public CourseResource getCourseById(@PathVariable("id") Long id) {
+    public CourseResource courseById(@PathVariable("id") Long id) {
         return courseMapper.toResource(courseService.findById(id));
     }
 
@@ -41,17 +41,18 @@ public class CourseController {
     @ApiResponse(responseCode = "400", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Richiesta non valida")
     @ApiResponse(responseCode = "401", content = @Content)
     @ApiResponse(responseCode = "403", content = @Content)
-    public List<CourseResource> searchCourses(@RequestParam(required = false) @Schema(description = "Ricerca del nome con operatore 'contains'") String name) {
+    public List<CourseResource> coursesSearch(@RequestParam(required = false) @Schema(description = "Ricerca del nome con operatore 'contains'") String name) {
         return courseService.search(name).stream().map(courseMapper::toResource).collect(Collectors.toList());
     }
 
     @PostMapping
     @Operation(summary = "Crea un tipologie di portata")
-    @ApiResponse(responseCode = "200")
+    @ApiResponse(responseCode = "201")
     @ApiResponse(responseCode = "400", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Richiesta non valida")
     @ApiResponse(responseCode = "401", content = @Content)
     @ApiResponse(responseCode = "403", content = @Content)
-    public CourseResource createCourse(@RequestBody @Valid CourseRequest courseRequest) {
+    @ApiResponse(responseCode = "409", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Portata con il medesimo nome già esistente")
+    public CourseResource courseCreate(@RequestBody @Valid CourseRequest courseRequest) {
         return courseMapper.toResource(courseService.create(courseRequest.getName()));
     }
 
@@ -62,7 +63,8 @@ public class CourseController {
     @ApiResponse(responseCode = "401", content = @Content)
     @ApiResponse(responseCode = "403", content = @Content)
     @ApiResponse(responseCode = "404", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Portata non trovata")
-    public CourseResource updateCourse(@PathVariable("id") Long id, @RequestBody @Valid CourseRequest courseRequest) {
+    @ApiResponse(responseCode = "409", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Portata con il medesimo nome già esistente")
+    public CourseResource courseUpdate(@PathVariable("id") Long id, @RequestBody @Valid CourseRequest courseRequest) {
         return courseMapper.toResource(courseService.update(id, courseRequest.getName()));
     }
 
@@ -74,7 +76,7 @@ public class CourseController {
     @ApiResponse(responseCode = "403", content = @Content)
     @ApiResponse(responseCode = "404", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Portata non trovata")
     @ApiResponse(responseCode = "409", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Portata referenziata in alcuni prodotti")
-    public void deleteCourse(@PathVariable("id") Long id) {
+    public void courseDelete(@PathVariable("id") Long id) {
         courseService.delete(id);
     }
 }
