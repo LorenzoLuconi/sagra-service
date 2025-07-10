@@ -4,6 +4,7 @@ import it.loreluc.sagraservice.order.resource.OrderRequest;
 import it.loreluc.sagraservice.order.resource.OrderResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,8 +31,8 @@ public class OrderController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public List<OrderResponse> searchOrders(SearchOrderParams searchOrderParams) {
-        return null;
+    public List<OrderResponse> searchOrders(SearchOrderParams searchOrderParams, Pageable pageable) {
+        return orderService.searchOrders(searchOrderParams, pageable).stream().map(orderMapper::toResponse).toList();
     }
 
     @DeleteMapping("/{orderId}")

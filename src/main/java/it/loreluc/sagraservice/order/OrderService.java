@@ -1,5 +1,6 @@
 package it.loreluc.sagraservice.order;
 
+import com.querydsl.jpa.impl.JPAQuery;
 import it.loreluc.sagraservice.config.SagraSettings;
 import it.loreluc.sagraservice.error.InvalidProduct;
 import it.loreluc.sagraservice.error.SagraBadRequestException;
@@ -8,13 +9,16 @@ import it.loreluc.sagraservice.error.SagraQuantitaNonSufficiente;
 import it.loreluc.sagraservice.jpa.Order;
 import it.loreluc.sagraservice.jpa.OrderProduct;
 import it.loreluc.sagraservice.jpa.Product;
+import it.loreluc.sagraservice.jpa.QOrder;
 import it.loreluc.sagraservice.order.resource.OrderProductRequest;
 import it.loreluc.sagraservice.order.resource.OrderRequest;
 import it.loreluc.sagraservice.product.ProductService;
 import it.loreluc.sagraservice.security.UsersRepository;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +43,7 @@ public class OrderService {
     private final ProductService productService;
     private final SagraSettings settings;
     private final UsersRepository usersRepository;
+    private final EntityManager em;
 
     public Order getOrderById(Long orderId) {
         return orderRepository.findById(orderId).orElseThrow(() -> new SagraNotFoundException("Nessun ordine trovato con l'id: " + orderId));
@@ -135,6 +140,26 @@ public class OrderService {
         order.setTotalAmount(calculateTotalAmount(order));
 
         return orderRepository.save(order);
+    }
+
+    public List<Order> searchOrders(SearchOrderParams searchOrderParams, Pageable pageable) {
+        final QOrder o = QOrder.order;
+        final JPAQuery<Order> query = new JPAQuery<Order>(em)
+                .select(o)
+                .from(o);
+
+        if ( searchOrderParams.getCustomer() != null && ! searchOrderParams.getCustomer().isEmpty()) {
+            query.where(o.customer.containsIgnoreCase(searchOrderParams.getCustomer()));
+        }
+
+        if ( searchOrderParams.getUsername() != null && ! searchOrderParams.getUsername().isEmpty()) {
+            query.where(o.user.username.eq(searchOrderParams.getUsername()));
+        }
+
+        query.offset(pageable.getOffset());
+        query.limit(pageable.getPageSize());
+
+        return query.fetch();
     }
 
     private void validateOrderRequest(OrderRequest orderRequest) {
