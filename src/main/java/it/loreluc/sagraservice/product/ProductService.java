@@ -1,9 +1,11 @@
 package it.loreluc.sagraservice.product;
 
+import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQuery;
 import it.loreluc.sagraservice.error.EntityConflictException;
 import it.loreluc.sagraservice.jpa.Product;
 import it.loreluc.sagraservice.jpa.ProductQuantity;
+import it.loreluc.sagraservice.jpa.QOrderProduct;
 import it.loreluc.sagraservice.jpa.QProduct;
 import it.loreluc.sagraservice.product.resource.ProductMapper;
 import it.loreluc.sagraservice.product.resource.ProductRequest;
@@ -25,6 +27,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final EntityManager entityManager;
     private final ProductMapper productMapper;
+    private final EntityManager em;
 
     public Product findById(Long id) {
         return productRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Prodotto non trovato con id: " + id));
@@ -101,5 +104,21 @@ public class ProductService {
         product.setSellLocked(locked);
 
         return productRepository.save(product);
+    }
+
+    @Transactional(rollbackFor = Throwable.class)
+    public void delete(Long productId) {
+        final Product product = findById(productId);
+
+        final QOrderProduct q = QOrderProduct.orderProduct;
+        final Long count = new JPAQuery<Long>(entityManager)
+                .select(Wildcard.count).from(q)
+                .where(q.product.id.eq(productId)).fetchOne();
+
+        if ( count != null && count > 0 ) {
+            throw new EntityNotFoundException(String.format("Impossibile rimuovere il prodotto in quanto è referenziato in %s ordini", count));
+        }
+
+        productRepository.delete(product);
     }
 }
