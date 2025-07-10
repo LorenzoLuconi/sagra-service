@@ -121,6 +121,8 @@
                 <constraints referencedTableName="users" referencedColumnNames="username" foreignKeyName="fk_orders_users" nullable="false" />
             </column>
 
+            <column name="discount_rate" type="decimal(4,1)" />
+
             <column name="created" type="datetime">
                 <constraints nullable="false"/>
             </column>
@@ -159,6 +161,21 @@
             <column name="order_id"/>
             <column name="product_id"/>
         </createIndex>
+
+        <createTable tableName="discounts">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+
+            <column name="name" type="varchar(32)" >
+                <constraints nullable="false" unique="true"/>
+            </column>
+
+            <column name="rate" type="decimal(4,1)" >
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
 
     </changeSet>
 </databaseChangeLog>

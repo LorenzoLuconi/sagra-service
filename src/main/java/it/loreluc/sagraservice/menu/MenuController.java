@@ -24,8 +24,8 @@ public class MenuController {
     }
 
     @GetMapping
-    public List<MenuResource> search(@RequestParam(name = "nome", required = false) String nome) {
-        return menuService.search(nome).stream().map(menuMapper::toResource).collect(Collectors.toList());
+    public List<MenuResource> search(@RequestParam(required = false) String name) {
+        return menuService.search(name).stream().map(menuMapper::toResource).collect(Collectors.toList());
     }
 
     @PostMapping

@@ -29,6 +29,10 @@ insert into products_quantity(product_id, quantity) VALUES
 ;
 
 
+insert into discounts (name, rate) VALUES
+('Sconto 20% amici', 20.0)
+;
+
 insert into orders (id, username, customer, note, take_away, service_number, service_cost, total_amount, created, last_update) VALUES
 (1, 'lorenzo', 'Lorenzo Luconi', null, false, 6, 3.0, 34.4, '2025-07-10 09:49:00', '2025-07-10 09:50:01')
 ;

@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -87,6 +88,7 @@ public class OrderService {
         order.setCustomer(orderRequest.getCustomer());
         order.setNote(orderRequest.getNote());
         order.setTakeAway(orderRequest.isTakeAway());
+        order.setDiscountRate(orderRequest.getDiscountRate());
         updateService(order, orderRequest);
 
         final Map<Long, OrderProduct> orderedProductsMap = order.getOrderedProducts().stream().collect(Collectors.toMap(OrderProduct::getId, Function.identity()));
@@ -187,10 +189,17 @@ public class OrderService {
         }
     }
 
+    private  static final BigDecimal ONE_HUNDRED = new BigDecimal(100);
     private BigDecimal calculateTotalAmount(Order order) {
-        return order.getOrderedProducts().stream().map(op -> op.getProduct().getPrice().multiply(new BigDecimal(op.getQuantity())))
-                        .reduce(BigDecimal.ZERO, BigDecimal::add)
-                        .add(order.getServiceCost());
+        final BigDecimal total = order.getOrderedProducts().stream().map(op -> op.getProduct().getPrice().multiply(new BigDecimal(op.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .add(order.getServiceCost());
+
+        if ( order.getDiscountRate() != null ) {
+            return total.subtract(total.multiply(order.getDiscountRate()).divide(ONE_HUNDRED, RoundingMode.HALF_DOWN).setScale(2, RoundingMode.HALF_DOWN));
+        }
+
+        return total;
     }
 
     private void addProductToOrder(Order order, OrderProductRequest orderProductRequest) {

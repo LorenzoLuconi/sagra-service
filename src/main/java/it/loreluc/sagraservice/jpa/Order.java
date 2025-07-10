@@ -1,6 +1,7 @@
 package it.loreluc.sagraservice.jpa;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -33,6 +34,9 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "username")
     private User user;
+
+    @Min(1) @Max(100)
+    private BigDecimal discountRate;
 
     @Length(max = 128)
     private String customer;
