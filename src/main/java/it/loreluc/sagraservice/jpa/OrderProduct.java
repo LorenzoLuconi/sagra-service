@@ -28,11 +28,12 @@ public class OrderProduct {
 
     @NotNull
     @ManyToOne
+    @JoinColumn(name = "order_id")
     private Order order;
 
     @NotNull
     @ManyToOne
-    @JoinColumn(name = "product")
+    @JoinColumn(name = "product_id")
     private Product product;
 
     @NotNull

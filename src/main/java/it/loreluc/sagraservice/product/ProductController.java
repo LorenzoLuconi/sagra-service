@@ -1,5 +1,6 @@
 package it.loreluc.sagraservice.product;
 
+import it.loreluc.sagraservice.error.InvalidProduct;
 import it.loreluc.sagraservice.error.SagraQuantitaNonSufficiente;
 import it.loreluc.sagraservice.product.resource.ProductMapper;
 import it.loreluc.sagraservice.product.resource.ProductQuantityRequest;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static it.loreluc.sagraservice.error.InvalidProduct.InvalidStatus.NOT_ENOUGH_QUANTITY;
 
 @RequiredArgsConstructor
 @RestController
@@ -53,11 +56,11 @@ public class ProductController {
     }
 
     @PutMapping("/{productId}/updateQuantity")
-    public ProductResponse updateProductQuantity(@PathVariable Long productId, @RequestBody @Valid ProductQuantityRequest productQuantityRequest) {
+    public ProductResponse updateProductQuantity(@PathVariable Long productId, @RequestBody @Valid ProductQuantityRequest productQuantityRequest) throws SagraQuantitaNonSufficiente {
         if ( productService.updateProductQuantity(productId, productQuantityRequest.getQuantityVariation())) {
             return productMapper.toResource(productService.findById(productId));
         } else {
-            throw new SagraQuantitaNonSufficiente();
+            throw new SagraQuantitaNonSufficiente(InvalidProduct.of(productId, NOT_ENOUGH_QUANTITY));
         }
     }
 

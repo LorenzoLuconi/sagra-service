@@ -1,6 +1,7 @@
 package it.loreluc.sagraservice.jpa;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -28,8 +29,13 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
     @Length(max = 128)
-    private String name;
+    private String customer;
 
     @Length(max = 255)
     private String note;
@@ -37,9 +43,14 @@ public class Order {
     @NotNull
     private boolean takeAway;
 
-    private Integer service;
+    @NotNull @Min(0)
+    private Integer serviceNumber;
 
+    @NotNull @Min(0)
     private BigDecimal serviceCost;
+
+    @NotNull @Min(0)
+    private BigDecimal totalAmount;
 
     @CreatedDate
     private LocalDateTime created;
@@ -49,12 +60,7 @@ public class Order {
 
     // TODO aggiungere gestione sconto
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     @NotEmpty
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<OrderProduct> orderedProducts = new ArrayList<>();
-
-    @ManyToOne
-    @NotNull
-    private User user;
-
 }

@@ -21,6 +21,7 @@ sagra-service:
     allowed-origins:
       - http://localhost:3000
     max-age: 86400
+  service-cost: 0.5
 
 ---
 spring:

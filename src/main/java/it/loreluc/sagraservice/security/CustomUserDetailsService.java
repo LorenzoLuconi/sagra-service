@@ -29,7 +29,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         Objects.requireNonNull(username);
         Objects.requireNonNull(password);
 
-        final Optional<User> optionalUtente = usersRepository.findById(username);
+        final Optional<User> optionalUtente = usersRepository.findByUsername(username);
 
         if ( optionalUtente.isPresent() ) {
             // TODO secgliere altra eccezione
@@ -45,7 +45,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Transactional
     public void updatePassword(String username, String password) {
-        final User user = usersRepository.findById(username).orElseThrow(() -> new UsernameNotFoundException(username));
+        final User user = usersRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
 
         if ( passwordEncoder.matches(password, user.getPassword()) ) {
             // TODO rivedere eccezione

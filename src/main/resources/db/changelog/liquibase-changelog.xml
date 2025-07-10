@@ -89,7 +89,7 @@
         </createTable>
 
         <createTable tableName="products_quantity">
-            <column name="product" type="bigint" >
+            <column name="product_id" type="bigint" >
                 <constraints referencedTableName="products" referencedColumnNames="id" foreignKeyName="fk_products_quantity" nullable="false" deleteCascade="true"/>
             </column>
             <column name="quantity" type="integer">
@@ -110,15 +110,18 @@
                 <constraints nullable="false" />
             </column>
 
-            <column name="service" type="integer" defaultValue="0">
+            <column name="service_number" type="integer" >
                 <constraints nullable="false" />
             </column>
 
-            <column name="service_cost" type="decimal(6,2)" defaultValue="0">
+            <column name="service_cost" type="decimal(6,2)">
+                <constraints nullable="false" />
+            </column>
+            <column name="total_amount" type="decimal(6,2)">
                 <constraints nullable="false" />
             </column>
 
-            <column name="user" type="varchar(32)" >
+            <column name="user_id" type="bigint" >
                 <constraints referencedTableName="users" referencedColumnNames="id" foreignKeyName="fk_orders_users" nullable="false" />
             </column>
 
@@ -135,10 +138,10 @@
             <column name="id" type="bigint" autoIncrement="true">
                 <constraints nullable="false" primaryKey="true"/>
             </column>
-            <column name="order" type="bigint" >
+            <column name="order_id" type="bigint" >
                 <constraints referencedTableName="orders" referencedColumnNames="id" foreignKeyName="fk_orders_products_order" nullable="false" deleteCascade="true"/>
             </column>
-            <column name="product" type="bigint" >
+            <column name="product_id" type="bigint" >
                 <constraints referencedTableName="products" referencedColumnNames="id" foreignKeyName="fk_orders_products_product" nullable="false" />
             </column>
             <column name="price" type="decimal(6,2)" >
@@ -157,8 +160,8 @@
         </createTable>
 
         <createIndex tableName="orders_products" indexName="idx_orders_products" unique="true">
-            <column name="order"/>
-            <column name="product"/>
+            <column name="order_id"/>
+            <column name="product_id"/>
         </createIndex>
 
 

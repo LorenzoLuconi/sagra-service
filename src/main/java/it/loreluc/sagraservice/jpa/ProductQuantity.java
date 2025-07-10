@@ -14,13 +14,13 @@ import lombok.Setter;
 public class ProductQuantity {
 
     @Id
-    @Column(name="product")
+    @Column(name="product_id")
     private Long id;
 
     @NotNull
     @MapsId
     @OneToOne(optional = false, fetch = FetchType.EAGER)
-    @JoinColumn(name = "product")
+    @JoinColumn(name = "product_id")
     private Product product;
 
     private Integer quantity;
