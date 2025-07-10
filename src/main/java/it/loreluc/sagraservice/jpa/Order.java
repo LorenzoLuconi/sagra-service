@@ -31,7 +31,7 @@ public class Order {
 
     @NotNull
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "username")
     private User user;
 
     @Length(max = 128)

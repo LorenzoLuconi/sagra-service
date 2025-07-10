@@ -1,5 +1,5 @@
 --- password lorenzo in bcrypt
-insert into users values (1, 'lorenzo', '$2a$10$CQViJR5.yIcVJzfeGPMRMeeb9aZbUOCga.MJhbKVaq1ooxIdrF4mm', now(), now());
+insert into users values ('lorenzo', '$2a$10$CQViJR5.yIcVJzfeGPMRMeeb9aZbUOCga.MJhbKVaq1ooxIdrF4mm', now(), now());
 
 insert into menu values (1, 'Primi');
 insert into menu values (2, 'Secondi');
@@ -29,8 +29,8 @@ insert into products_quantity(product_id, quantity) VALUES
 ;
 
 
-insert into orders (id, user_id, customer, note, take_away, service_number, service_cost, total_amount, created, last_update) VALUES
-(1, 1, 'Lorenzo Luconi', null, false, 6, 3.0, 34.4, '2025-07-10 09:49:00', '2025-07-10 09:50:01')
+insert into orders (id, username, customer, note, take_away, service_number, service_cost, total_amount, created, last_update) VALUES
+(1, 'lorenzo', 'Lorenzo Luconi', null, false, 6, 3.0, 34.4, '2025-07-10 09:49:00', '2025-07-10 09:50:01')
 ;
 
 insert into orders_products (id, order_id, product_id, price, quantity, note, created, last_update) VALUES

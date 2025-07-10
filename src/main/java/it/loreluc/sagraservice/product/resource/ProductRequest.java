@@ -16,10 +16,10 @@ public class ProductRequest {
     private String note;
 
     @NotNull
-    private Long department;
+    private Long departmentId;
 
     @NotNull
-    private Long menu;
+    private Long menuId;
 
     @NotNull
     @Min(0)

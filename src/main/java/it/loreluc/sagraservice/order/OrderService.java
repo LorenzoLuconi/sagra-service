@@ -48,9 +48,6 @@ public class OrderService {
 
         final Order order = ordineMapper.toEntity(orderRequest);
 
-        // FIXME Utente
-        order.setUser(usersRepository.findById(1L).orElseThrow(() -> new RuntimeException("User not found")));
-
         if ( ! order.isTakeAway() && order.getServiceNumber() > 0 ) {
             if ( settings.getServiceCost().compareTo(BigDecimal.ZERO) > 0 ) {
                 order.setServiceCost(
@@ -62,13 +59,15 @@ public class OrderService {
         }
 
         // FIXME manca gestione dell'utente
+        order.setUser(usersRepository.findById(1L).orElseThrow(() -> new RuntimeException("User not found")));
+
 
         for (final OrderProductRequest orderProductRequest : orderRequest.getOrderedProducts()) {
             final Product product;
             try {
-                product = productService.findById(orderProductRequest.getProduct());
+                product = productService.findById(orderProductRequest.getProductId());
             } catch ( EntityNotFoundException e) {
-                throw new SagraBadRequestException("Prodotto non trovato con id: " + orderProductRequest.getProduct());
+                throw new SagraBadRequestException("Prodotto non trovato con id: " + orderProductRequest.getProductId());
             }
 
             if ( product.isSellLocked() ) {

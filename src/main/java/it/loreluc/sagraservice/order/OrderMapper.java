@@ -11,6 +11,7 @@ import org.mapstruct.MappingConstants;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface OrderMapper {
+    @Mapping(target = "totalAmount", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "user", ignore = true)
     @Mapping(target = "serviceCost", ignore = true)
@@ -19,8 +20,9 @@ public interface OrderMapper {
     @Mapping(target = "lastUpdate", ignore = true)
     Order toEntity(OrderRequest orderRequest);
 
+    @Mapping(target = "username", source = "user.username")
     OrderResponse toResponse(Order order);
 
-    @Mapping(target = "product", source = "product.id")
+    @Mapping(target = "productId", source = "product.id")
     OrderProductResponse toResponse(OrderProduct  orderProduct);
 }

@@ -12,8 +12,8 @@ public class ProductResponse {
     private Long id;
     private String name;
     private String note;
-    private Long department;
-    private Long menu;
+    private Long departmentId;
+    private Long menuId;
     private BigDecimal price;
     private boolean sellLocked;
     private Integer quantity;

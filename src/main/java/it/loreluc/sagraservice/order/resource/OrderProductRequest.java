@@ -10,7 +10,7 @@ import lombok.EqualsAndHashCode;
 public class OrderProductRequest {
 
     @NotNull
-    private Long product;
+    private Long productId;
 
     @NotNull @Min(1)
     private Integer quantity;

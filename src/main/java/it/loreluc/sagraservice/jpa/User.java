@@ -28,9 +28,7 @@ import java.util.Collections;
 public class User implements UserDetails {
 
     @Id
-    private Long id;
-
-    @Length(max = 32)
+    @Length(max = 16)
     private String username;
 
     @NotEmpty
