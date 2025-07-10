@@ -2,6 +2,7 @@ package it.loreluc.sagraservice.order;
 
 import it.loreluc.sagraservice.order.resource.OrderRequest;
 import it.loreluc.sagraservice.order.resource.OrderResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ public class OrderController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public OrderResponse createOrder(@RequestBody OrderRequest orderRequest) {
+    public OrderResponse createOrder(@RequestBody @Valid OrderRequest orderRequest) {
         return orderMapper.toResponse(orderService.createOrder(orderRequest));
     }
 
@@ -37,5 +38,10 @@ public class OrderController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteOrderById(@PathVariable Long orderId) {
         orderService.deleteOrder(orderId);
+    }
+
+    @PutMapping("/{orderId}")
+    public OrderResponse updateOrderById(@PathVariable Long orderId, @RequestBody @Valid OrderRequest orderRequest) {
+        return orderMapper.toResponse(orderService.updateOrder(orderId, orderRequest));
     }
 }

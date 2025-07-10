@@ -19,6 +19,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static it.loreluc.sagraservice.error.InvalidProduct.InvalidStatus.LOCKED;
 import static it.loreluc.sagraservice.error.InvalidProduct.InvalidStatus.NOT_ENOUGH_QUANTITY;
@@ -41,59 +47,15 @@ public class OrderService {
     @Transactional(rollbackFor = Throwable.class)
     public Order createOrder(OrderRequest orderRequest) {
 
-        if ( orderRequest.isTakeAway() && orderRequest.getServiceNumber() > 0 ) {
-            log.warn("Tentativo di creare un ordine da asporto con indicazione dei coperti: {}", orderRequest);
-            throw new SagraBadRequestException("Ordine da asporto non può avere dei coperti");
-        }
-
+        validateOrderRequest(orderRequest);
         final Order order = orderMapper.toEntity(orderRequest);
-
-        if ( ! order.isTakeAway() && order.getServiceNumber() > 0 ) {
-            if ( settings.getServiceCost().compareTo(BigDecimal.ZERO) > 0 ) {
-                order.setServiceCost(
-                    settings.getServiceCost().multiply(new BigDecimal(orderRequest.getServiceNumber()))
-                );
-            } else {
-                order.setServiceCost(BigDecimal.ZERO);
-            }
-        }
+        updateService(order, orderRequest);
 
         // FIXME manca gestione dell'utente
-        order.setUser(usersRepository.findById(1L).orElseThrow(() -> new RuntimeException("User not found")));
+        order.setUser(usersRepository.findById("lorenzo").orElseThrow(() -> new RuntimeException("User not found")));
 
-
-        for (final OrderProductRequest orderProductRequest : orderRequest.getOrderedProducts()) {
-            final Product product;
-            try {
-                product = productService.findById(orderProductRequest.getProductId());
-            } catch ( EntityNotFoundException e) {
-                throw new SagraBadRequestException("Prodotto non trovato con id: " + orderProductRequest.getProductId());
-            }
-
-            if ( product.isSellLocked() ) {
-                throw new SagraQuantitaNonSufficiente(InvalidProduct.of(product.getId(), LOCKED));
-            }
-
-            if ( ! productService.updateProductQuantity(product, -orderProductRequest.getQuantity()) ) {
-                throw new SagraQuantitaNonSufficiente(InvalidProduct.of(product.getId(), NOT_ENOUGH_QUANTITY));
-            }
-
-            final OrderProduct orderProduct = new OrderProduct();
-            orderProduct.setOrder(order);
-
-            orderProduct.setProduct(product);
-            orderProduct.setPrice(product.getPrice());
-            orderProduct.setQuantity(orderProductRequest.getQuantity());
-            orderProduct.setNote(orderProduct.getNote());
-            order.getOrderedProducts().add(orderProduct);
-        }
-
-
-        order.setTotalAmount(
-            order.getOrderedProducts().stream().map(op -> op.getProduct().getPrice().multiply(new BigDecimal(op.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .add(order.getServiceCost())
-        );
+        orderRequest.getOrderedProducts().forEach(orderProductRequest -> addProductToOrder(order, orderProductRequest));
+        order.setTotalAmount(calculateTotalAmount(order));
 
         return orderRepository.save(order);
     }
@@ -110,5 +72,125 @@ public class OrderService {
         });
 
         orderRepository.delete(order);
+    }
+
+    @Transactional(rollbackFor = Throwable.class)
+    public Order updateOrder(Long orderId, OrderRequest orderRequest) {
+        final Order order = getOrderById(orderId);
+        validateOrderRequest(orderRequest);
+
+        order.setCustomer(orderRequest.getCustomer());
+        order.setNote(orderRequest.getNote());
+        order.setTakeAway(orderRequest.isTakeAway());
+        updateService(order, orderRequest);
+
+        final Map<Long, OrderProduct> orderedProductsMap = order.getOrderedProducts().stream().collect(Collectors.toMap(OrderProduct::getId, Function.identity()));
+
+        for (final OrderProductRequest orderProductRequest : orderRequest.getOrderedProducts()) {
+            final OrderProduct orderProduct = orderedProductsMap.get(orderProductRequest.getProductId());
+
+            // Nuovo prodotto da aggiungere
+            if ( orderProduct == null ) {
+                log.debug("Prodotto da aggiungere all'ordine: orderId={}, {}", orderId, orderProductRequest);
+                addProductToOrder(order, orderProductRequest);
+                continue;
+            }
+
+            // Quantita modificata
+            if ( ! orderProduct.getQuantity().equals(orderProductRequest.getQuantity() )) {
+                final int diff = orderProduct.getQuantity() - orderProductRequest.getQuantity();
+                final Product product = orderProduct.getProduct();
+                log.debug("Quantità modificata per prodotto in ordine: orderId={}, productId={}, quantita orig {} - nuova quantita {} = {}", orderId, orderProduct.getProduct().getId(), orderProduct.getQuantity(), orderProductRequest.getQuantity(), diff);
+
+                if ( ! productService.updateProductQuantity(product, diff) ) {
+                    throw new SagraQuantitaNonSufficiente(InvalidProduct.of(product.getId(), NOT_ENOUGH_QUANTITY));
+                }
+            }
+        }
+
+        final Set<Long> newOrderedProductsSet = orderRequest.getOrderedProducts().stream().map(OrderProductRequest::getProductId).collect(Collectors.toSet());
+        final List<Integer> idxToRemove = new ArrayList<>();
+        // Individuiamo i prodotti da rimuovere dall'ordine
+        for ( int idx = 0; idx < order.getOrderedProducts().size(); ++idx ) {
+            final OrderProduct orderProduct = order.getOrderedProducts().get(idx);
+
+            if ( ! newOrderedProductsSet.contains(orderProduct.getProduct().getId()) ) {
+                log.debug("Modifica ordine, individuato prodotto da rimuovere: ordineId={}, {}", orderId, idx);
+                idxToRemove.add(idx);
+            }
+        }
+
+        // Rimuoviamo i prodotti dall'ordine
+        idxToRemove.forEach(index -> {
+            final OrderProduct removed = order.getOrderedProducts().remove(index.intValue());
+            if ( removed == null ) {
+                log.error("Il prodotto ordinato individuato per l'eliminzaione non è stato trovato: orderId={}, index prodotto da rimuovere={}", order.getId(), index);
+                throw new RuntimeException("Errore durante la modifica di un ordine per rimozione di un prodotto ordinato");
+            }
+
+            log.debug("Modifica ordine rimozione prodotto: ordineId={}, index={}, removed={}", orderId, index, removed);
+            productService.updateProductQuantity(removed.getProduct(), removed.getQuantity());
+        });
+
+        order.setTotalAmount(calculateTotalAmount(order));
+
+        return orderRepository.save(order);
+    }
+
+    private void validateOrderRequest(OrderRequest orderRequest) {
+
+        final Set<Long> orderedProductsSet = orderRequest.getOrderedProducts().stream().map(OrderProductRequest::getProductId).collect(Collectors.toSet());
+        if ( orderedProductsSet.size() != orderRequest.getOrderedProducts().size() ) {
+            throw new SagraBadRequestException("Sono presenti dei prodotti inseriti più volte nell'ordine");
+        }
+
+        if ( orderRequest.isTakeAway() && orderRequest.getServiceNumber() > 0 ) {
+            log.warn("Tentativo di creare/aggiornare un ordine da asporto con indicazione dei coperti: {}", orderRequest);
+            throw new SagraBadRequestException("Ordine da asporto non può avere dei coperti");
+        }
+    }
+
+    private void updateService(Order order, OrderRequest orderRequest) {
+        if ( ! order.isTakeAway() && order.getServiceNumber() > 0 ) {
+            if ( settings.getServiceCost().compareTo(BigDecimal.ZERO) > 0 ) {
+                order.setServiceCost(
+                        settings.getServiceCost().multiply(new BigDecimal(orderRequest.getServiceNumber()))
+                );
+            } else {
+                order.setServiceCost(BigDecimal.ZERO);
+            }
+        }
+    }
+
+    private BigDecimal calculateTotalAmount(Order order) {
+        return order.getOrderedProducts().stream().map(op -> op.getProduct().getPrice().multiply(new BigDecimal(op.getQuantity())))
+                        .reduce(BigDecimal.ZERO, BigDecimal::add)
+                        .add(order.getServiceCost());
+    }
+
+    private void addProductToOrder(Order order, OrderProductRequest orderProductRequest) {
+        final Product product;
+        try {
+            product = productService.findById(orderProductRequest.getProductId());
+        } catch ( EntityNotFoundException e) {
+            throw new SagraBadRequestException("Prodotto non trovato con id: " + orderProductRequest.getProductId());
+        }
+
+        if ( product.isSellLocked() ) {
+            throw new SagraQuantitaNonSufficiente(InvalidProduct.of(product.getId(), LOCKED));
+        }
+
+        if ( ! productService.updateProductQuantity(product, -orderProductRequest.getQuantity()) ) {
+            throw new SagraQuantitaNonSufficiente(InvalidProduct.of(product.getId(), NOT_ENOUGH_QUANTITY));
+        }
+
+        final OrderProduct orderProduct = new OrderProduct();
+        orderProduct.setOrder(order);
+
+        orderProduct.setProduct(product);
+        orderProduct.setPrice(product.getPrice());
+        orderProduct.setQuantity(orderProductRequest.getQuantity());
+        orderProduct.setNote(orderProduct.getNote());
+        order.getOrderedProducts().add(orderProduct);
     }
 }
