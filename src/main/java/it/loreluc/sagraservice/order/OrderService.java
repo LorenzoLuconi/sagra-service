@@ -2,11 +2,9 @@ package it.loreluc.sagraservice.order;
 
 import com.querydsl.jpa.impl.JPAQuery;
 import it.loreluc.sagraservice.config.SagraSettings;
+import it.loreluc.sagraservice.discount.DiscountService;
 import it.loreluc.sagraservice.error.*;
-import it.loreluc.sagraservice.jpa.Order;
-import it.loreluc.sagraservice.jpa.OrderProduct;
-import it.loreluc.sagraservice.jpa.Product;
-import it.loreluc.sagraservice.jpa.QOrder;
+import it.loreluc.sagraservice.jpa.*;
 import it.loreluc.sagraservice.order.resource.OrderProductRequest;
 import it.loreluc.sagraservice.order.resource.OrderRequest;
 import it.loreluc.sagraservice.product.ProductService;
@@ -20,10 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -41,6 +36,7 @@ public class OrderService {
     private final SagraSettings settings;
     private final UsersRepository usersRepository;
     private final EntityManager em;
+    private final DiscountService discountService;
 
     public Order getOrderById(Long orderId) {
         return orderRepository.findById(orderId).orElseThrow(() -> new SagraNotFoundException("Nessun ordine trovato con l'id: " + orderId));
@@ -52,6 +48,7 @@ public class OrderService {
 
         validateOrderRequest(orderRequest);
         final Order order = orderMapper.toEntity(orderRequest);
+        getDiscountRate(orderRequest).ifPresent(order::setDiscountRate);
         updateService(order, orderRequest);
 
         // FIXME manca gestione dell'utente
@@ -85,7 +82,8 @@ public class OrderService {
         order.setCustomer(orderRequest.getCustomer());
         order.setNote(orderRequest.getNote());
         order.setTakeAway(orderRequest.isTakeAway());
-        order.setDiscountRate(orderRequest.getDiscountRate());
+        getDiscountRate(orderRequest).ifPresent(order::setDiscountRate);
+
         updateService(order, orderRequest);
 
         final Map<Long, OrderProduct> orderedProductsMap = order.getOrderedProducts().stream().collect(Collectors.toMap(OrderProduct::getId, Function.identity()));
@@ -227,5 +225,20 @@ public class OrderService {
         orderProduct.setQuantity(orderProductRequest.getQuantity());
         orderProduct.setNote(orderProduct.getNote());
         order.getOrderedProducts().add(orderProduct);
+    }
+
+    private Optional<BigDecimal> getDiscountRate(OrderRequest orderRequest) {
+        if ( orderRequest.getDiscountId() != null ) {
+            try {
+                final Discount discount = discountService.findById(orderRequest.getDiscountId());
+                return Optional.of(discount.getRate());
+            } catch (SagraNotFoundException e) {
+                throw new SagraBadRequestException(
+                        InvalidValue.builder().field("discountId").value(orderRequest.getDiscountId()).message("Codice sconto non trovato").build()
+                );
+            }
+        }
+
+        return Optional.empty();
     }
 }

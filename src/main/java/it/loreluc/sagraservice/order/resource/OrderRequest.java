@@ -2,13 +2,11 @@ package it.loreluc.sagraservice.order.resource;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -27,8 +25,7 @@ public class OrderRequest {
     @Min(1)
     private Integer serviceNumber;
 
-    @Min(1) @Max(100)
-    private BigDecimal discountRate;
+    private Long discountId;
 
     @NotEmpty
     private List<@Valid OrderProductRequest> orderedProducts;

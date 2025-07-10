@@ -11,6 +11,7 @@ import org.mapstruct.MappingConstants;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface OrderMapper {
+    @Mapping(target = "discountRate", ignore = true)
     @Mapping(target = "totalAmount", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "user", ignore = true)
