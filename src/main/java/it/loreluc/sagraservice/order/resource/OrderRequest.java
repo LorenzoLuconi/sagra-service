@@ -28,5 +28,5 @@ public class OrderRequest {
     private Long discountId;
 
     @NotEmpty
-    private List<@Valid OrderProductRequest> orderedProducts;
+    private List<@Valid OrderProductRequest> products;
 }

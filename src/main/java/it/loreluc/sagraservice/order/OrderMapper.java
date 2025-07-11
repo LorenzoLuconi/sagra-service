@@ -16,7 +16,7 @@ public interface OrderMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "user", ignore = true)
     @Mapping(target = "serviceCost", ignore = true)
-    @Mapping(target = "orderedProducts", ignore = true)
+    @Mapping(target = "products", ignore = true)
     @Mapping(target = "created", ignore = true)
     @Mapping(target = "lastUpdate", ignore = true)
     Order toEntity(OrderRequest orderRequest);

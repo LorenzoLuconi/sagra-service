@@ -37,5 +37,5 @@ public class OrderResponse {
     @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime lastUpdate;
 
-    private List<OrderProductResponse> orderedProducts = new ArrayList<>();
+    private List<OrderProductResponse> products = new ArrayList<>();
 }
