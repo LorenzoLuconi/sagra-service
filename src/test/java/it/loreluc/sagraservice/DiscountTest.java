@@ -53,6 +53,28 @@ public class DiscountTest extends CommonTest {
     }
 
     @Test
+    public void discount_create_wrong_rate() throws Exception {
+        final String request = """
+                {
+                    "name": "Nuovo Sconto 30%",
+                    "rate": 101
+                }
+                """;
+        this.mockMvc.perform(post("/v1/discounts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(request)
+                )
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.invalidValues", hasSize(1)))
+                .andExpect(jsonPath("$.invalidValues[0].field", is("rate")))
+                .andExpect(jsonPath("$.invalidValues[0].value", is(101)))
+                .andExpect(jsonPath("$.invalidValues[0].message", notNullValue()))
+        ;
+    }
+
+    @Test
     public void discount_create_conflict() throws Exception {
         final String request = """
                 {

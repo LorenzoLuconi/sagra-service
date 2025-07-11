@@ -48,11 +48,13 @@ insert into orders_products (id, order_id, product_id, price, quantity, note, cr
 ;
 
 insert into monitors (id, name) VALUES
-(1, 'Cucina')
+(1, 'Cucina'),
+(2, 'Test')
 ;
 
 insert into monitors_products (monitor_id, product_id, priority) VALUES
 (1, 1, 2),
 (1, 4, 1),
-(1, 3, 3)
+(1, 3, 3),
+(2, 1, 1)
 ;

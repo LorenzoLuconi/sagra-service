@@ -35,6 +35,7 @@ public class MonitorController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Crea un monitor")
     @ApiResponse(responseCode = "201")
     @ApiResponse(responseCode = "400", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Richiesta non valida")
