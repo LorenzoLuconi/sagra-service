@@ -26,9 +26,8 @@ public class CourseService {
     @Transactional(rollbackOn = Throwable.class)
     public Course create(String nomeportata) {
 
-        if ( courseRepository.existsByNameContainingIgnoreCase(nomeportata) ) {
+        if ( courseRepository.existsByNameIgnoreCase(nomeportata) ) {
             throw new SagraConflictException(String.format("Portata con il nome '%s' già esistente", nomeportata));
-
         }
 
         final Course course = new Course();
@@ -49,14 +48,14 @@ public class CourseService {
     }
 
     @Transactional(rollbackOn = Throwable.class)
-    public Course update(Long portataId, String nomeportata) {
+    public Course update(Long portataId, String courseName) {
         final Course course = findById(portataId);
 
-        if ( courseRepository.existsByNameContainingIgnoreCaseAndIdNot(nomeportata, portataId) ) {
-            throw new SagraConflictException(String.format("Portata con il nome '%s' già esistente", nomeportata));
+        if ( courseRepository.existsByNameIgnoreCaseAndIdNot(courseName, portataId) ) {
+            throw new SagraConflictException(String.format("Portata con il nome '%s' già esistente", courseName));
         }
 
-        course.setName(nomeportata);
+        course.setName(courseName);
 
         return courseRepository.save(course);
     }

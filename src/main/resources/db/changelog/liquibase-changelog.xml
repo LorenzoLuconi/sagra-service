@@ -176,6 +176,29 @@
             </column>
         </createTable>
 
+        <createTable tableName="monitors">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+
+            <column name="name" type="varchar(32)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+
+        </createTable>
+
+        <createTable tableName="monitors_products">
+            <column name="monitor_id" type="bigint" >
+                <constraints referencedTableName="monitors" referencedColumnNames="id" foreignKeyName="fk_monitors_products_monitor" nullable="false" deleteCascade="true" primaryKey="true" primaryKeyName="PK_MONITOR_PRODUCT"/>
+            </column>
+            <column name="product_id" type="bigint" >
+                <constraints referencedTableName="products" referencedColumnNames="id" foreignKeyName="fk_monitors_products_product" nullable="false" deleteCascade="true" primaryKey="true" primaryKeyName="PK_MONITOR_PRODUCT"/>
+            </column>
+            <column name="priority" type="smallint">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
 
     </changeSet>
 </databaseChangeLog>

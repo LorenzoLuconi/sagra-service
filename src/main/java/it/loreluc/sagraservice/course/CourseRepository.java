@@ -8,7 +8,7 @@ import java.util.List;
 public interface CourseRepository extends JpaRepository<Course, Long> {
     List<Course> findAllByNameContains(String nome);
 
-    boolean existsByNameContainingIgnoreCaseAndIdNot(String nome, Long id);
-    boolean existsByNameContainingIgnoreCase(String nome);
+    boolean existsByNameIgnoreCaseAndIdNot(String nome, Long id);
+    boolean existsByNameIgnoreCase(String nome);
 
 }

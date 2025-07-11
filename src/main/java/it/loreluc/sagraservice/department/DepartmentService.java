@@ -49,7 +49,7 @@ public class DepartmentService {
     public Department update(Long departmentId, String departmentName) {
         final Department department = findById(departmentId);
 
-        if ( departmentRepository.existsByNameContainingIgnoreCaseAndIdNot(departmentName, departmentId) ) {
+        if ( departmentRepository.existsByNameIgnoreCaseAndIdNot(departmentName, departmentId) ) {
             throw new SagraConflictException(String.format("Reparto con il nome '%s' già esistente", departmentName));
         }
 

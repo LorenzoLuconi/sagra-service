@@ -43,3 +43,13 @@ insert into orders_products (id, order_id, product_id, price, quantity, note, cr
 (3, 1, 5, 1.5, 2, null, '2025-07-10 09:49:00', '2025-07-10 09:49:00'),
 (4, 1, 6, 2.0, 1, null, '2025-07-10 09:49:00', '2025-07-10 09:49:00')
 ;
+
+insert into monitors (id, name) VALUES
+(1, 'Cucina')
+;
+
+insert into monitors_products (monitor_id, product_id, priority) VALUES
+(1, 1, 2),
+(1, 4, 1),
+(1, 3, 3)
+;

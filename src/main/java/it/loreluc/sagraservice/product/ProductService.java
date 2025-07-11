@@ -73,6 +73,11 @@ public class ProductService {
     @Transactional(rollbackFor = Throwable.class)
     public Product update(Long productId, ProductRequest productRequest) {
         final Product product = findById(productId);
+
+        if (productRepository.existsByNameIgnoreCaseAndIdNot(product.getName(), productId)) {
+            throw new SagraConflictException(String.format("Prodotto con il nome '%s' già esistente", productRequest.getName()));
+        }
+
         productMapper.update(product, productRequest);
 
         return productRepository.save(product);

@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface DiscountRepository extends JpaRepository<Discount, Long> {
 
+    boolean existsByNameIgnoreCaseAndIdNot(String name, Long id);
     boolean existsByNameIgnoreCase(String name);
     List<Discount> findByNameIgnoreCase(String name);
 }

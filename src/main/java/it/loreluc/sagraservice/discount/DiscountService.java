@@ -24,8 +24,7 @@ public class DiscountService {
     public Discount create(DiscountRequest discountRequest) {
 
         if ( discountRepository.existsByNameIgnoreCase(discountRequest.getName()) ) {
-            throw new SagraConflictException(String.format("Sconto con il nome '%s' già esistente", discountRequest));
-
+            throw new SagraConflictException(String.format("Sconto con il nome '%s' già esistente", discountRequest.getName()));
         }
 
         final Discount discount = new Discount();
@@ -43,6 +42,10 @@ public class DiscountService {
     @Transactional(rollbackOn = Throwable.class)
     public Discount update(Long discountId, DiscountRequest discountRequest) {
         final Discount discount = findById(discountId);
+
+        if ( discountRepository.existsByNameIgnoreCaseAndIdNot(discountRequest.getName(), discountId) ) {
+            throw new SagraConflictException(String.format("Sconto con il nome '%s' già esistente", discountRequest.getName()));
+        }
 
         discount.setName(discountRequest.getName());
         discount.setRate(discountRequest.getRate());
