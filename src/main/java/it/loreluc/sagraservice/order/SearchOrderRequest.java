@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import org.springdoc.core.annotations.ParameterObject;
 
+import java.time.LocalDate;
+
 @Data
 @ParameterObject
 public class SearchOrderRequest {
@@ -11,4 +13,6 @@ public class SearchOrderRequest {
     private String customer;
 
     private String username;
+
+    private LocalDate created;
 }

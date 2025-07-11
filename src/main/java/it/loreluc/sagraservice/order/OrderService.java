@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -151,6 +152,12 @@ public class OrderService {
 
         if ( searchOrderRequest.getUsername() != null && ! searchOrderRequest.getUsername().isEmpty()) {
             query.where(o.user.username.eq(searchOrderRequest.getUsername()));
+        }
+
+        if ( searchOrderRequest.getCreated() != null ) {
+            final LocalDateTime startDate = searchOrderRequest.getCreated().atStartOfDay();
+            final LocalDateTime endDate = searchOrderRequest.getCreated().plusDays(1).atStartOfDay();
+            query.where(o.created.goe(startDate).and(o.created.lt(endDate)));
         }
 
         query.offset(pageable.getOffset());
