@@ -1,10 +1,8 @@
 package it.loreluc.sagraservice.jpa;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -13,6 +11,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
@@ -34,6 +33,10 @@ public class User implements UserDetails {
     @NotEmpty
     private String password;
 
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
     @CreatedDate
     private LocalDateTime created;
 
@@ -42,6 +45,9 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        if ( role != null ) {
+            return Collections.singleton(new SimpleGrantedAuthority("ROLE_" + role.name().toUpperCase()));
+        }
         return Collections.emptySet();
     }
 
