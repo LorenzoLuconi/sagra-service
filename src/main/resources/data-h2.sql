@@ -32,7 +32,8 @@ insert into products_quantity(product_id, quantity) VALUES
 
 
 insert into discounts (name, rate) VALUES
-('Sconto 20% amici', 20.0)
+('Sconto 20% amici', 20.0),
+('Sconto 100% amici speciali', 100.0)
 ;
 
 insert into orders (id, username, customer, note, take_away, service_number, service_cost, total_amount, created, last_update) VALUES

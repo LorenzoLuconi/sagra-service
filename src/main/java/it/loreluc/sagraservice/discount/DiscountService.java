@@ -55,11 +55,11 @@ public class DiscountService {
 
 
 
-    public List<Discount> search(String nome) {
-        if ( nome == null || nome.isEmpty() ) {
+    public List<Discount> search(String name) {
+        if ( name == null || name.isEmpty() ) {
             return discountRepository.findAll();
         }
 
-        return discountRepository.findByNameIgnoreCase(nome);
+        return discountRepository.findByNameContainingIgnoreCase(name);
     }
 }
