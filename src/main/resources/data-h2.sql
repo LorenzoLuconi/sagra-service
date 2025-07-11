@@ -5,6 +5,7 @@ insert into courses values (1, 'Primi');
 insert into courses values (2, 'Secondi');
 insert into courses values (3, 'Panzanelle');
 insert into courses values (4, 'Bar');
+insert into courses values (5, 'Test Test');
 
 insert into departments values (1, 'Cucina');
 insert into departments values (2, 'Griglia');
@@ -14,8 +15,8 @@ insert into departments values (4, 'Test Test');
 insert into products (id, name, note, department_id, course_id, price, created, last_update) VALUES
 (1, 'Tordelli', null, 1, 1, 8, now(), now()),
 (2, 'Panzanelle', null, 1, 3, 0.8, now(), now()),
-(3, 'Grigliata Salsicce', null, 2, 1, 4.5, now(), now()),
-(4, 'Grigliata Rosticciana', null, 2, 1, 6.5, now(), now()),
+(3, 'Grigliata Salsicce', null, 2, 2, 4.5, now(), now()),
+(4, 'Grigliata Rosticciana', null, 2, 2, 6.5, now(), now()),
 (5, 'Stracchino', null, 1, 3, 1.5, now(), now()),
 (6, 'Bottiglia Acqua 1.5 litri', null, 3, 4, 2.0, now(), now())
 ;

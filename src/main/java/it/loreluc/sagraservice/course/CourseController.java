@@ -47,6 +47,7 @@ public class CourseController {
 
     @PostMapping
     @Operation(summary = "Crea un tipologie di portata")
+    @ResponseStatus(HttpStatus.CREATED)
     @ApiResponse(responseCode = "201")
     @ApiResponse(responseCode = "400", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Richiesta non valida")
     @ApiResponse(responseCode = "401", content = @Content)

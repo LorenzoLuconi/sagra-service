@@ -67,7 +67,7 @@ public class CourseService {
             return courseRepository.findAll();
         }
 
-        return courseRepository.findAllByNameContains(nome);
+        return courseRepository.findAllByNameContainsIgnoreCase(nome);
     }
 
 
