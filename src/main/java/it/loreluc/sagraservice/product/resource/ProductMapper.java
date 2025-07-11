@@ -9,7 +9,7 @@ import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring", uses = {CourseService.class, DepartmentService.class})
 public interface ProductMapper {
-    @Mapping(target = "quantity", source = "productQuantity.quantity")
+    @Mapping(target = "quantity", ignore = true)
     @Mapping(target = "courseId", source = "course.id")
     @Mapping(target = "departmentId", source = "department.id")
     ProductResponse toResource(Product product);
@@ -21,6 +21,7 @@ public interface ProductMapper {
     @Mapping(target = "lastUpdate", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "created", ignore = true)
+    @Mapping(target = "parentId", ignore = true)
     Product toEntity(ProductRequest productRequest);
 
     @Mapping(target = "department", source = "departmentId")
@@ -30,5 +31,6 @@ public interface ProductMapper {
     @Mapping(target = "lastUpdate", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "created", ignore = true)
+    @Mapping(target = "parentId", ignore = true)
     void update(@MappingTarget Product product, ProductRequest productRequest);
 }

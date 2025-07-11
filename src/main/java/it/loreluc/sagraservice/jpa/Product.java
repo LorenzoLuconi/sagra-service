@@ -49,8 +49,11 @@ public class Product {
 
     private boolean sellLocked = false;
 
+    @Column(updatable = false)
+    private Long parentId;
+
     @NotNull
-    @OneToOne(fetch = FetchType.EAGER, mappedBy = "product", cascade = {CascadeType.REMOVE, CascadeType.PERSIST})
+    @OneToOne(fetch = FetchType.EAGER, mappedBy = "product", cascade = {CascadeType.REMOVE, CascadeType.PERSIST}, optional = false)
     private ProductQuantity productQuantity;
 
     @CreatedDate

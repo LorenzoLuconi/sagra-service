@@ -75,6 +75,10 @@
                 <constraints nullable="false" />
             </column>
 
+            <column name="parent_id" type="bigint" >
+                <constraints referencedTableName="products" referencedColumnNames="id" foreignKeyName="fk_products_parent" nullable="true" deleteCascade="true"/>
+            </column>
+
             <column name="created" type="datetime">
                 <constraints nullable="false"/>
             </column>

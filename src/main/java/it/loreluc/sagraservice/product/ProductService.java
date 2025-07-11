@@ -2,6 +2,8 @@ package it.loreluc.sagraservice.product;
 
 import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQuery;
+import it.loreluc.sagraservice.error.InvalidValue;
+import it.loreluc.sagraservice.error.SagraBadRequestException;
 import it.loreluc.sagraservice.error.SagraConflictException;
 import it.loreluc.sagraservice.error.SagraNotFoundException;
 import it.loreluc.sagraservice.jpa.Product;
@@ -10,6 +12,7 @@ import it.loreluc.sagraservice.jpa.QOrderProduct;
 import it.loreluc.sagraservice.jpa.QProduct;
 import it.loreluc.sagraservice.product.resource.ProductMapper;
 import it.loreluc.sagraservice.product.resource.ProductRequest;
+import it.loreluc.sagraservice.product.resource.ProductResponse;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -61,6 +64,28 @@ public class ProductService {
             throw new SagraConflictException(String.format("Prodotto con il nome '%s' già esistente", productRequest.getName()));
         }
 
+        if ( productRequest.getParentId() != null ) {
+            final Product parent = productRepository.findById(productRequest.getParentId()).orElseThrow(() ->
+                    new SagraBadRequestException(InvalidValue.builder()
+                            .field("parentId")
+                            .value(productRequest.getParentId())
+                            .message("Prodotto collegato non trovato")
+                            .build()
+                    )
+            );
+
+            if ( parent.getParentId() != null ) {
+                throw new SagraBadRequestException(InvalidValue.builder()
+                        .field("parentId")
+                        .value(productRequest.getParentId())
+                        .message("Il prodotto collegato non può essere collegato a sua volta ad un'altro prodotto")
+                        .build()
+                );
+            }
+
+            product.setParentId(parent.getId());
+        }
+
         final ProductQuantity productQuantity = new ProductQuantity();
         productQuantity.setProduct(product);
         productQuantity.setQuantity(0);
@@ -90,11 +115,18 @@ public class ProductService {
 
     @Transactional(rollbackFor = Throwable.class, propagation = Propagation.MANDATORY)
     public boolean updateProductQuantity(Product product, Integer quantityVariation) {
+        final Long productId;
+        if ( product.getParentId() != null ) {
+            productId = product.getParentId();
+        } else {
+            productId = product.getId();
+        }
+
         final int updated = entityManager.createQuery("""
             update ProductQuantity pq set pq.quantity = pq.quantity + :quantityVariation
             where pq.product.id = :prodottoId and pq.quantity + :quantityVariation >= 0
             """)
-                .setParameter("prodottoId", product.getId())
+                .setParameter("prodottoId", productId)
                 .setParameter("quantityVariation", quantityVariation)
                 .executeUpdate();
 
@@ -124,5 +156,17 @@ public class ProductService {
         }
 
         productRepository.delete(product);
+    }
+
+    public ProductResponse toResource(Product product) {
+        final ProductResponse resource = productMapper.toResource(product);
+        if ( product.getParentId() != null ) {
+            final Product parent = findById(product.getParentId());
+            resource.setQuantity(parent.getProductQuantity().getQuantity());
+        } else {
+            resource.setQuantity(product.getProductQuantity().getQuantity());
+        }
+
+        return resource;
     }
 }

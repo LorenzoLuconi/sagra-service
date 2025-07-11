@@ -1,5 +1,6 @@
 package it.loreluc.sagraservice.product.resource;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -24,6 +25,9 @@ public class ProductRequest {
     @NotNull
     @Min(0)
     private BigDecimal price;
+
+    @Schema(description = "Id prodotto collegato, non può essere modificato")
+    private Long parentId;
 
  //   private boolean bloccaVendita;
 }

@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import it.loreluc.sagraservice.error.ErrorResource;
 import it.loreluc.sagraservice.error.InvalidProduct;
 import it.loreluc.sagraservice.error.SagraQuantitaNonSufficiente;
-import it.loreluc.sagraservice.product.resource.ProductMapper;
 import it.loreluc.sagraservice.product.resource.ProductQuantityRequest;
 import it.loreluc.sagraservice.product.resource.ProductRequest;
 import it.loreluc.sagraservice.product.resource.ProductResponse;
@@ -28,7 +27,6 @@ import static it.loreluc.sagraservice.error.InvalidProduct.ProductError.NOT_ENOU
 @Tag(name="Prodotti")
 public class ProductController {
 
-    private final ProductMapper productMapper;
     private final ProductService productService;
 
     @GetMapping("/{productId}")
@@ -38,7 +36,7 @@ public class ProductController {
     @ApiResponse(responseCode = "401", content = @Content)
     @ApiResponse(responseCode = "403", content = @Content)
     public ProductResponse productById(@PathVariable Long productId) {
-        return productMapper.toResource(productService.findById(productId));
+        return productService.toResource(productService.findById(productId));
     }
 
     @GetMapping
@@ -48,7 +46,7 @@ public class ProductController {
     @ApiResponse(responseCode = "401", content = @Content)
     @ApiResponse(responseCode = "403", content = @Content)
     public List<ProductResponse> productsSearch(ProductSearchRequest searchRequest) {
-        return productService.search(searchRequest).stream().map(productMapper::toResource).collect(Collectors.toList());
+        return productService.search(searchRequest).stream().map(productService::toResource).collect(Collectors.toList());
     }
 
     @PostMapping
@@ -60,7 +58,7 @@ public class ProductController {
     @ApiResponse(responseCode = "403", content = @Content)
     @ApiResponse(responseCode = "409", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Prodotto con medesimo nome già esistente")
     public ProductResponse productCreate(@RequestBody @Valid ProductRequest productRequest) {
-        return productMapper.toResource(productService.create(productRequest));
+        return productService.toResource(productService.create(productRequest));
     }
 
     @PutMapping("/{productId}")
@@ -72,7 +70,7 @@ public class ProductController {
     @ApiResponse(responseCode = "404", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Prodotto non trovata")
     @ApiResponse(responseCode = "409", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Prodotto con il medesimo nome già esistente")
     public ProductResponse productUpdate(@PathVariable Long productId, @RequestBody @Valid ProductRequest productRequest) {
-       return productMapper.toResource(productService.update(productId, productRequest));
+       return productService.toResource(productService.update(productId, productRequest));
     }
 
     @PutMapping("/{productId}/sellLock")
@@ -82,7 +80,7 @@ public class ProductController {
     @ApiResponse(responseCode = "403", content = @Content)
     @ApiResponse(responseCode = "404", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Prodotto non trovata")
     public ProductResponse productSellLock(@PathVariable Long productId) {
-        return productMapper.toResource(productService.sellLock(productId, true));
+        return productService.toResource(productService.sellLock(productId, true));
     }
 
     @PutMapping("/{productId}/sellUnlock")
@@ -92,7 +90,7 @@ public class ProductController {
     @ApiResponse(responseCode = "403", content = @Content)
     @ApiResponse(responseCode = "404", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Prodotto non trovata")
     public ProductResponse productSellUnlock(@PathVariable Long productId) {
-        return productMapper.toResource(productService.sellLock(productId, false));
+        return productService.toResource(productService.sellLock(productId, false));
     }
 
     @PutMapping("/{productId}/updateQuantity")
@@ -105,7 +103,7 @@ public class ProductController {
     @ApiResponse(responseCode = "450", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Quantità prodotto insufficiente per la variazione richiesta")
     public ProductResponse productUpdateQuantity(@PathVariable Long productId, @RequestBody @Valid ProductQuantityRequest productQuantityRequest) throws SagraQuantitaNonSufficiente {
         if ( productService.updateProductQuantity(productId, productQuantityRequest.getQuantityVariation())) {
-            return productMapper.toResource(productService.findById(productId));
+            return productService.toResource(productService.findById(productId));
         } else {
             throw new SagraQuantitaNonSufficiente(InvalidProduct.of(productId, NOT_ENOUGH_QUANTITY));
         }

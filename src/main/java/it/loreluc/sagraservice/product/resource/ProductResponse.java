@@ -19,6 +19,7 @@ public class ProductResponse {
     private BigDecimal price;
     private boolean sellLocked;
     private Integer quantity;
+    private Long parentId;
     @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime created;
     @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")
