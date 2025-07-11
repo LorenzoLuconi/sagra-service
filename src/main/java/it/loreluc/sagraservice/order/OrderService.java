@@ -55,7 +55,7 @@ public class OrderService {
         // FIXME manca gestione dell'utente
         order.setUser(usersRepository.findById("lorenzo").orElseThrow(() -> new RuntimeException("User not found")));
 
-        orderRequest.getOrderedProducts().forEach(orderProductRequest -> addProductToOrder(order, orderProductRequest));
+        orderRequest.getProducts().forEach(orderProductRequest -> addProductToOrder(order, orderProductRequest));
         order.setTotalAmount(calculateTotalAmount(order));
 
         return orderRepository.save(order);
@@ -65,7 +65,7 @@ public class OrderService {
     public void deleteOrder(Long orderId) {
         final Order order = getOrderById(orderId);
 
-        order.getOrderedProducts().forEach(op -> {
+        order.getProducts().forEach(op -> {
             if ( ! productService.updateProductQuantity(op.getProduct(), op.getQuantity()) ) {
                 log.error("Nella cancellazione di un ordine non dovrebbe mai esserci un errore durante la restituzione della quantità: {}, {}", order, op);
                 throw new RuntimeException("Si è verificato un errore inatteso nella cancellazione dell'ordine: " + orderId);
@@ -87,9 +87,9 @@ public class OrderService {
 
         updateService(order, orderRequest);
 
-        final Map<Long, OrderProduct> orderedProductsMap = order.getOrderedProducts().stream().collect(Collectors.toMap(OrderProduct::getId, Function.identity()));
+        final Map<Long, OrderProduct> orderedProductsMap = order.getProducts().stream().collect(Collectors.toMap(OrderProduct::getId, Function.identity()));
 
-        for (final OrderProductRequest orderProductRequest : orderRequest.getOrderedProducts()) {
+        for (final OrderProductRequest orderProductRequest : orderRequest.getProducts()) {
             final OrderProduct orderProduct = orderedProductsMap.get(orderProductRequest.getProductId());
 
             // Nuovo prodotto da aggiungere
@@ -111,11 +111,11 @@ public class OrderService {
             }
         }
 
-        final Set<Long> newOrderedProductsSet = orderRequest.getOrderedProducts().stream().map(OrderProductRequest::getProductId).collect(Collectors.toSet());
+        final Set<Long> newOrderedProductsSet = orderRequest.getProducts().stream().map(OrderProductRequest::getProductId).collect(Collectors.toSet());
         final List<Integer> idxToRemove = new ArrayList<>();
         // Individuiamo i prodotti da rimuovere dall'ordine
-        for ( int idx = 0; idx < order.getOrderedProducts().size(); ++idx ) {
-            final OrderProduct orderProduct = order.getOrderedProducts().get(idx);
+        for ( int idx = 0; idx < order.getProducts().size(); ++idx ) {
+            final OrderProduct orderProduct = order.getProducts().get(idx);
 
             if ( ! newOrderedProductsSet.contains(orderProduct.getProduct().getId()) ) {
                 log.debug("Modifica ordine, individuato prodotto da rimuovere: ordineId={}, {}", orderId, idx);
@@ -125,7 +125,7 @@ public class OrderService {
 
         // Rimuoviamo i prodotti dall'ordine
         idxToRemove.forEach(index -> {
-            final OrderProduct removed = order.getOrderedProducts().remove(index.intValue());
+            final OrderProduct removed = order.getProducts().remove(index.intValue());
             if ( removed == null ) {
                 log.error("Il prodotto ordinato individuato per l'eliminzaione non è stato trovato: orderId={}, index prodotto da rimuovere={}", order.getId(), index);
                 throw new RuntimeException("Errore durante la modifica di un ordine per rimozione di un prodotto ordinato");
@@ -168,8 +168,8 @@ public class OrderService {
 
     private void validateOrderRequest(OrderRequest orderRequest) {
 
-        final Set<Long> orderedProductsSet = orderRequest.getOrderedProducts().stream().map(OrderProductRequest::getProductId).collect(Collectors.toSet());
-        if ( orderedProductsSet.size() != orderRequest.getOrderedProducts().size() ) {
+        final Set<Long> orderedProductsSet = orderRequest.getProducts().stream().map(OrderProductRequest::getProductId).collect(Collectors.toSet());
+        if ( orderedProductsSet.size() != orderRequest.getProducts().size() ) {
             throw new SagraBadRequestException("Sono presenti dei prodotti inseriti più volte nell'ordine");
         }
 
@@ -195,7 +195,7 @@ public class OrderService {
 
     private  static final BigDecimal ONE_HUNDRED = new BigDecimal(100);
     private BigDecimal calculateTotalAmount(Order order) {
-        final BigDecimal total = order.getOrderedProducts().stream().map(op -> op.getProduct().getPrice().multiply(new BigDecimal(op.getQuantity())))
+        final BigDecimal total = order.getProducts().stream().map(op -> op.getProduct().getPrice().multiply(new BigDecimal(op.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .add(order.getServiceCost());
 
@@ -231,7 +231,7 @@ public class OrderService {
         orderProduct.setPrice(product.getPrice());
         orderProduct.setQuantity(orderProductRequest.getQuantity());
         orderProduct.setNote(orderProduct.getNote());
-        order.getOrderedProducts().add(orderProduct);
+        order.getProducts().add(orderProduct);
     }
 
     private Optional<BigDecimal> getDiscountRate(OrderRequest orderRequest) {

@@ -66,5 +66,5 @@ public class Order {
 
     @NotEmpty
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<OrderProduct> orderedProducts = new ArrayList<>();
+    private List<OrderProduct> products = new ArrayList<>();
 }

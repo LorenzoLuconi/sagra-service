@@ -1,5 +1,6 @@
 package it.loreluc.sagraservice.order.resource;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -7,6 +8,7 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(of = {"id"})
+@Schema(name = "OrderedProductRequest")
 public class OrderProductRequest {
 
     @NotNull

@@ -10,7 +10,7 @@ import org.hibernate.validator.constraints.Length;
 import java.util.List;
 
 @Data
-@Schema(name = "OrderedProductRequest")
+@Schema(name = "OrderRequest")
 public class OrderRequest {
 
     @NotEmpty
@@ -28,5 +28,5 @@ public class OrderRequest {
     private Long discountId;
 
     @NotEmpty
-    private List<@Valid OrderProductRequest> orderedProducts;
+    private List<@Valid OrderProductRequest> products;
 }
