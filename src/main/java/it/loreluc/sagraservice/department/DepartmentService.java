@@ -24,7 +24,7 @@ public class DepartmentService {
     @Transactional(rollbackOn = Throwable.class)
     public Department create(String departmentName) {
 
-        if ( departmentRepository.existsByNameContainingIgnoreCase(departmentName)) {
+        if ( departmentRepository.existsByNameIgnoreCase(departmentName)) {
             throw new SagraConflictException(String.format("Reparto con il nome '%s' già esistente", departmentName));
         }
 

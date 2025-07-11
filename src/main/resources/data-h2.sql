@@ -9,6 +9,7 @@ insert into courses values (4, 'Bar');
 insert into departments values (1, 'Cucina');
 insert into departments values (2, 'Griglia');
 insert into departments values (3, 'Bar');
+insert into departments values (4, 'Test Test');
 
 insert into products (id, name, note, department_id, course_id, price, created, last_update) VALUES
 (1, 'Tordelli', null, 1, 1, 8, now(), now()),
