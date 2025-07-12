@@ -44,13 +44,12 @@ public class OrderService {
     }
 
     @Transactional(rollbackFor = Throwable.class)
-    public Order
-    createOrder(OrderRequest orderRequest) {
+    public Order createOrder(OrderRequest orderRequest) {
 
         validateOrderRequest(orderRequest);
         final Order order = orderMapper.toEntity(orderRequest);
         getDiscountRate(orderRequest).ifPresent(order::setDiscountRate);
-        updateService(order, orderRequest);
+        order.setServiceCost(calculateServiceCost(orderRequest));
 
         // FIXME manca gestione dell'utente
         order.setUser(usersRepository.findById("lorenzo").orElseThrow(() -> new RuntimeException("User not found")));
@@ -80,14 +79,13 @@ public class OrderService {
         final Order order = getOrderById(orderId);
         validateOrderRequest(orderRequest);
 
-        order.setCustomer(orderRequest.getCustomer());
-        order.setNote(orderRequest.getNote());
-        order.setTakeAway(orderRequest.isTakeAway());
+        orderMapper.updateEntity(order, orderRequest);
         getDiscountRate(orderRequest).ifPresent(order::setDiscountRate);
 
-        updateService(order, orderRequest);
+        order.setServiceCost(calculateServiceCost(orderRequest));
 
-        final Map<Long, OrderProduct> orderedProductsMap = order.getProducts().stream().collect(Collectors.toMap(OrderProduct::getId, Function.identity()));
+        final Map<Long, OrderProduct> orderedProductsMap = order.getProducts().stream()
+                .collect(Collectors.toMap(o -> o.getProduct().getId(), Function.identity()));
 
         for (final OrderProductRequest orderProductRequest : orderRequest.getProducts()) {
             final OrderProduct orderProduct = orderedProductsMap.get(orderProductRequest.getProductId());
@@ -96,6 +94,7 @@ public class OrderService {
             if ( orderProduct == null ) {
                 log.debug("Prodotto da aggiungere all'ordine: orderId={}, {}", orderId, orderProductRequest);
                 addProductToOrder(order, orderProductRequest);
+                order.setLastUpdate(LocalDateTime.now());
                 continue;
             }
 
@@ -108,6 +107,7 @@ public class OrderService {
                 if ( ! productService.updateProductQuantity(product, diff) ) {
                     throw new SagraQuantitaNonSufficiente(InvalidProduct.of(product.getId(), NOT_ENOUGH_QUANTITY));
                 }
+                order.setLastUpdate(LocalDateTime.now());
             }
         }
 
@@ -133,6 +133,7 @@ public class OrderService {
 
             log.debug("Modifica ordine rimozione prodotto: ordineId={}, index={}, removed={}", orderId, index, removed);
             productService.updateProductQuantity(removed.getProduct(), removed.getQuantity());
+            order.setLastUpdate(LocalDateTime.now());
         });
 
         order.setTotalAmount(calculateTotalAmount(order));
@@ -176,21 +177,20 @@ public class OrderService {
         if ( orderRequest.isTakeAway() && orderRequest.getServiceNumber() > 0 ) {
             log.debug("Tentativo di creare/aggiornare un ordine da asporto con indicazione dei coperti: {}", orderRequest);
             throw new SagraBadRequestException(
-                    InvalidValue.builder().field("serviceNumber").message("Ordine da asporto non può avere dei coperti").build()
+                    InvalidValue.builder()
+                            .field("serviceNumber")
+                            .value(orderRequest.getServiceNumber())
+                            .message("Ordine da asporto non può avere dei coperti")
+                            .build()
             );
         }
     }
 
-    private void updateService(Order order, OrderRequest orderRequest) {
-        if ( ! order.isTakeAway() && order.getServiceNumber() > 0 ) {
-            if ( settings.getServiceCost().compareTo(BigDecimal.ZERO) > 0 ) {
-                order.setServiceCost(
-                        settings.getServiceCost().multiply(new BigDecimal(orderRequest.getServiceNumber()))
-                );
-            } else {
-                order.setServiceCost(BigDecimal.ZERO);
-            }
+    private BigDecimal calculateServiceCost(OrderRequest orderRequest) {
+        if ( orderRequest.getServiceNumber() > 0 && settings.getServiceCost().compareTo(BigDecimal.ZERO) > 0) {
+            return settings.getServiceCost().multiply(new BigDecimal(orderRequest.getServiceNumber()));
         }
+        return BigDecimal.ZERO;
     }
 
     private  static final BigDecimal ONE_HUNDRED = new BigDecimal(100);

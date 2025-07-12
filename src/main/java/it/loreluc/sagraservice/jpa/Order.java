@@ -62,8 +62,6 @@ public class Order {
     @LastModifiedDate
     private LocalDateTime lastUpdate;
 
-    // TODO aggiungere gestione sconto
-
     @NotEmpty
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<OrderProduct> products = new ArrayList<>();

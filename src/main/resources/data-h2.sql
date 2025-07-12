@@ -42,14 +42,18 @@ insert into discounts (name, rate) VALUES
 ;
 
 insert into orders (id, username, customer, note, take_away, service_number, service_cost, total_amount, created, last_update) VALUES
-(1, 'lorenzo', 'Lorenzo Luconi', null, false, 6, 3.0, 34.4, '2025-07-10 09:49:00', '2025-07-10 09:50:01')
+(1, 'lorenzo', 'Lorenzo Luconi', null, false, 6, 3.0, 34.4, '2025-07-10 09:49:00', '2025-07-10 09:50:01'),
+(2, 'lorenzo', 'Sandro Pertini', 'test', true, 0, 0, 4.0, '2025-07-10 09:49:00', '2025-07-10 09:50:01')
 ;
 
-insert into orders_products (id, order_id, product_id, price, quantity, note, created, last_update) VALUES
-(1, 1, 2, 0.8, 3, null, '2025-07-10 09:49:00', '2025-07-10 09:49:00'),
-(2, 1, 1, 8, 3, null, '2025-07-10 09:49:00', '2025-07-10 09:49:00'),
-(3, 1, 5, 1.5, 2, null, '2025-07-10 09:49:00', '2025-07-10 09:49:00'),
-(4, 1, 6, 2.0, 1, null, '2025-07-10 09:49:00', '2025-07-10 09:49:00')
+insert into orders_products (order_id, product_id, price, quantity, note) VALUES
+(1, 2, 0.8, 3, null),
+(1, 1, 8, 3, null),
+(1, 5, 1.5, 2, null),
+(1, 6, 2.0, 1, null),
+(2, 2, 0.8, 5, null),
+(2, 5, 1.5, 5, null)
+
 ;
 
 insert into monitors (id, name) VALUES

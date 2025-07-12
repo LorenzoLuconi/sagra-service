@@ -8,6 +8,7 @@ import it.loreluc.sagraservice.order.resource.OrderResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
+import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface OrderMapper {
@@ -26,4 +27,14 @@ public interface OrderMapper {
 
     @Mapping(target = "productId", source = "product.id")
     OrderProductResponse toResponse(OrderProduct  orderProduct);
+
+    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "totalAmount", ignore = true)
+    @Mapping(target = "serviceCost", ignore = true)
+    @Mapping(target = "lastUpdate", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "discountRate", ignore = true)
+    @Mapping(target = "created", ignore = true)
+    @Mapping(target = "products", ignore = true)
+    void updateEntity(@MappingTarget Order order, OrderRequest orderRequest);
 }

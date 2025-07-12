@@ -8,31 +8,34 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.validator.constraints.Length;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "orders_products")
 @Getter
 @Setter
 @ToString
-@EntityListeners(AuditingEntityListener.class)
+@IdClass(OrderProductId.class)
 public class OrderProduct {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "order_id")
+    private Long orderId;
+
+    @Id
+    @Column(name = "product_id")
+    private Long productId;
 
     @NotNull
     @ManyToOne
+    @MapsId("orderId")
     @JoinColumn(name = "order_id")
     private Order order;
 
     @NotNull
     @ManyToOne
+    @MapsId("productId")
     @JoinColumn(name = "product_id")
     private Product product;
 
@@ -46,10 +49,4 @@ public class OrderProduct {
 
     @Length(max=255)
     private String note;
-
-    @CreatedDate
-    private LocalDateTime created;
-
-    @LastModifiedDate
-    private LocalDateTime lastUpdate;
 }

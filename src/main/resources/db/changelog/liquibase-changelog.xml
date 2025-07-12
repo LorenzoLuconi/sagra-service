@@ -140,14 +140,11 @@
         </createTable>
 
         <createTable tableName="orders_products">
-            <column name="id" type="bigint" autoIncrement="true">
-                <constraints nullable="false" primaryKey="true"/>
-            </column>
             <column name="order_id" type="bigint" >
-                <constraints referencedTableName="orders" referencedColumnNames="id" foreignKeyName="fk_orders_products_order" nullable="false" deleteCascade="true"/>
+                <constraints primaryKey="true" referencedTableName="orders" referencedColumnNames="id" foreignKeyName="fk_orders_products_order" nullable="false" deleteCascade="true"/>
             </column>
             <column name="product_id" type="bigint" >
-                <constraints referencedTableName="products" referencedColumnNames="id" foreignKeyName="fk_orders_products_product" nullable="false" />
+                <constraints primaryKey="true" referencedTableName="products" referencedColumnNames="id" foreignKeyName="fk_orders_products_product" nullable="false" />
             </column>
             <column name="price" type="decimal(6,2)" >
                 <constraints nullable="false" />
@@ -156,18 +153,7 @@
                 <constraints nullable="false" />
             </column>
             <column name="note" type="varchar(255)" />
-            <column name="created" type="datetime">
-                <constraints nullable="false"/>
-            </column>
-            <column name="last_update" type="datetime">
-                <constraints nullable="false"/>
-            </column>
         </createTable>
-
-        <createIndex tableName="orders_products" indexName="idx_orders_products" unique="true">
-            <column name="order_id"/>
-            <column name="product_id"/>
-        </createIndex>
 
         <createTable tableName="discounts">
             <column name="id" type="bigint" autoIncrement="true">
