@@ -61,7 +61,7 @@ public class ProductTest extends CommonTest {
     public void course_create() throws Exception {
         final String request = """
                 {
-                    "name": "Nutellina",
+                    "name": "  Nutellina  ",
                     "note": "buona da spalmare",
                     "departmentId": 1,
                     "courseId": 1,

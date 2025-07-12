@@ -41,7 +41,7 @@ public class MonitorTest extends CommonTest {
     public void monitor_create() throws Exception {
         final String request = """
                 {
-                     "name": "Griglia",
+                     "name": "  Griglia  ",
                      "products": [
                          {
                              "productId": 1,
