@@ -13,14 +13,15 @@ insert into departments values (2, 'Griglia');
 insert into departments values (3, 'Bar');
 insert into departments values (4, 'Test Test');
 
-insert into products (id, name, note, department_id, course_id, price, created, last_update, parent_id) VALUES
-(1, 'Tordelli', null, 1, 1, 8, now(), now(), null),
-(2, 'Panzanelle', null, 1, 3, 0.8, now(), now(), null),
-(3, 'Grigliata Salsicce', null, 2, 2, 4.5, now(), now(), null),
-(4, 'Grigliata Rosticciana', null, 2, 2, 6.5, now(), now(), null),
-(5, 'Stracchino', null, 1, 3, 1.5, now(), now(), null),
-(6, 'Bottiglia Acqua 1.5 litri', null, 3, 4, 2.0, now(), now(), null),
-(7, 'Tordelli con formaggio', null, 3, 4, 2.0, now(), now(), 1)
+insert into products (id, name, note, department_id, course_id, price, created, last_update, parent_id, sell_locked) VALUES
+(1, 'Tordelli', null, 1, 1, 8, now(), now(), null, false),
+(2, 'Panzanelle', null, 1, 3, 0.8, now(), now(), null, false),
+(3, 'Grigliata Salsicce', null, 2, 2, 4.5, now(), now(), null, false),
+(4, 'Grigliata Rosticciana', null, 2, 2, 6.5, now(), now(), null, false),
+(5, 'Stracchino', null, 1, 3, 1.5, now(), now(), null, false),
+(6, 'Bottiglia Acqua 1.5 litri', null, 3, 4, 2.0, now(), now(), null, false),
+(7, 'Tordelli con formaggio', null, 3, 4, 2.0, now(), now(), 1, false),
+(8, 'Sell Locked', null, 3, 4, 2.0, now(), now(), null, true)
 ;
 
 insert into products_quantity(product_id, quantity) VALUES
@@ -30,7 +31,8 @@ insert into products_quantity(product_id, quantity) VALUES
 (4, 100),
 (5, 30),
 (6, 1000 ),
-(7, 0)
+(7, 0),
+(8, 100)
 ;
 
 

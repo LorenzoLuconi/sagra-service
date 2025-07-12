@@ -67,6 +67,7 @@ public class DiscountTest extends CommonTest {
                 )
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", notNullValue()))
                 .andExpect(jsonPath("$.invalidValues", hasSize(1)))
                 .andExpect(jsonPath("$.invalidValues[0].field", is("rate")))
                 .andExpect(jsonPath("$.invalidValues[0].value", is(101)))

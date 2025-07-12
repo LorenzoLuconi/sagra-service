@@ -2,6 +2,8 @@ package it.loreluc.sagraservice.product;
 
 import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQuery;
+import it.loreluc.sagraservice.course.CourseService;
+import it.loreluc.sagraservice.department.DepartmentService;
 import it.loreluc.sagraservice.error.InvalidValue;
 import it.loreluc.sagraservice.error.SagraBadRequestException;
 import it.loreluc.sagraservice.error.SagraConflictException;
@@ -30,6 +32,8 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final EntityManager entityManager;
     private final ProductMapper productMapper;
+    private final CourseService courseService;
+    private final DepartmentService departmentService;
 
     public Product findById(Long id) {
         return productRepository.findById(id).orElseThrow(() -> new SagraNotFoundException("Prodotto non trovato con id: " + id));
@@ -61,29 +65,15 @@ public class ProductService {
         final Product product = productMapper.toEntity(productRequest);
 
         if (productRepository.existsByNameIgnoreCase(product.getName())) {
-            throw new SagraConflictException(String.format("Prodotto con il nome '%s' già esistente", productRequest.getName()));
+            throw new SagraConflictException(
+                    String.format("Prodotto con il nome '%s' già esistente", productRequest.getName()),
+                    InvalidValue.builder().field("name").value(product.getName()).message("Nome già esistente").build()
+            );
         }
 
         if ( productRequest.getParentId() != null ) {
-            final Product parent = productRepository.findById(productRequest.getParentId()).orElseThrow(() ->
-                    new SagraBadRequestException(InvalidValue.builder()
-                            .field("parentId")
-                            .value(productRequest.getParentId())
-                            .message("Prodotto collegato non trovato")
-                            .build()
-                    )
-            );
-
-            if ( parent.getParentId() != null ) {
-                throw new SagraBadRequestException(InvalidValue.builder()
-                        .field("parentId")
-                        .value(productRequest.getParentId())
-                        .message("Il prodotto collegato non può essere collegato a sua volta ad un'altro prodotto")
-                        .build()
-                );
-            }
-
-            product.setParentId(parent.getId());
+            validateParentProduct(productRequest.getParentId());
+            product.setParentId(productRequest.getParentId());
         }
 
         final ProductQuantity productQuantity = new ProductQuantity();
@@ -99,7 +89,7 @@ public class ProductService {
     public Product update(Long productId, ProductRequest productRequest) {
         final Product product = findById(productId);
 
-        if (productRepository.existsByNameIgnoreCaseAndIdNot(product.getName(), productId)) {
+        if (productRepository.existsByNameIgnoreCaseAndIdNot(productRequest.getName(), productId)) {
             throw new SagraConflictException(String.format("Prodotto con il nome '%s' già esistente", productRequest.getName()));
         }
 
@@ -152,7 +142,7 @@ public class ProductService {
                 .where(q.product.id.eq(productId)).fetchOne();
 
         if ( count != null && count > 0 ) {
-            throw new SagraNotFoundException(String.format("Impossibile rimuovere il prodotto in quanto è referenziato in %s ordini", count));
+            throw new SagraConflictException(String.format("Impossibile rimuovere il prodotto in quanto è referenziato in %s ordini", count));
         }
 
         productRepository.delete(product);
@@ -168,5 +158,25 @@ public class ProductService {
         }
 
         return resource;
+    }
+
+    private void validateParentProduct(Long parentId) {
+        final Product parent = productRepository.findById(parentId).orElseThrow(() ->
+                new SagraBadRequestException(InvalidValue.builder()
+                        .field("parentId")
+                        .value(parentId)
+                        .message("Prodotto collegato non trovato")
+                        .build()
+                )
+        );
+
+        if ( parent.getParentId() != null ) {
+            throw new SagraBadRequestException(InvalidValue.builder()
+                    .field("parentId")
+                    .value(parentId)
+                    .message("Il prodotto collegato non può essere collegato a sua volta ad un'altro prodotto")
+                    .build()
+            );
+        }
     }
 }

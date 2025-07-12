@@ -35,7 +35,7 @@ public class SagraExceptionHandler {
     @ExceptionHandler(SagraConflictException.class)
     public ResponseEntity<ErrorResource> handler(SagraConflictException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(
-                ErrorResource.createError(e.getMessage())
+                ErrorResource.createError(e.getMessage(), e.getInvalidValues())
         );
     }
 
