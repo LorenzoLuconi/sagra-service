@@ -112,27 +112,24 @@ public class OrderService {
         }
 
         final Set<Long> newOrderedProductsSet = orderRequest.getProducts().stream().map(OrderProductRequest::getProductId).collect(Collectors.toSet());
-        final List<Integer> idxToRemove = new ArrayList<>();
-        // Individuiamo i prodotti da rimuovere dall'ordine
-        for ( int idx = 0; idx < order.getProducts().size(); ++idx ) {
-            final OrderProduct orderProduct = order.getProducts().get(idx);
+        final List<OrderProduct> productsToRemove = new ArrayList<>();
 
-            if ( ! newOrderedProductsSet.contains(orderProduct.getProduct().getId()) ) {
-                log.debug("Modifica ordine, individuato prodotto da rimuovere: ordineId={}, {}", orderId, idx);
-                idxToRemove.add(idx);
+        // Individuiamo i prodotti da rimuovere
+        order.getProducts().forEach(orderProduct -> {
+            if ( ! newOrderedProductsSet.contains(orderProduct.getProductId()) ) {
+                productsToRemove.add(orderProduct);
             }
-        }
+        });
 
         // Rimuoviamo i prodotti dall'ordine
-        idxToRemove.forEach(index -> {
-            final OrderProduct removed = order.getProducts().remove(index.intValue());
-            if ( removed == null ) {
-                log.error("Il prodotto ordinato individuato per l'eliminzaione non è stato trovato: orderId={}, index prodotto da rimuovere={}", order.getId(), index);
+        productsToRemove.forEach(orderProduct -> {
+            if ( ! order.getProducts().remove(orderProduct) ) {
+                log.error("Il prodotto ordinato individuato per l'eliminazione non è stato trovato: orderId={}, prodotto da rimuovere={}", order.getId(), orderProduct);
                 throw new RuntimeException("Errore durante la modifica di un ordine per rimozione di un prodotto ordinato");
             }
 
-            log.debug("Modifica ordine rimozione prodotto: ordineId={}, index={}, removed={}", orderId, index, removed);
-            productService.updateProductQuantity(removed.getProduct(), removed.getQuantity());
+            log.debug("Modifica ordine rimozione prodotto: ordineId={}, removed={}", orderId, orderProduct);
+            productService.updateProductQuantity(orderProduct.getProduct(), orderProduct.getQuantity());
             order.setLastUpdate(LocalDateTime.now());
         });
 
