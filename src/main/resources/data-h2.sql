@@ -21,7 +21,9 @@ insert into products (id, name, note, department_id, course_id, price, created, 
 (5, 'Stracchino', null, 1, 3, 1.5, now(), now(), null, false),
 (6, 'Bottiglia Acqua 1.5 litri', null, 3, 4, 2.0, now(), now(), null, false),
 (7, 'Tordelli con formaggio', null, 3, 4, 2.0, now(), now(), 1, false),
-(8, 'Sell Locked', null, 3, 4, 2.0, now(), now(), null, true)
+(8, 'Sell Locked', null, 3, 4, 2.0, now(), now(), null, true),
+(9, 'Bottiglia Acqua 0.5 litri', null, 3, 3, 1.0, now(), now(), null, false)
+
 ;
 
 insert into products_quantity(product_id, quantity) VALUES
@@ -32,7 +34,8 @@ insert into products_quantity(product_id, quantity) VALUES
 (5, 30),
 (6, 1000 ),
 (7, 0),
-(8, 100)
+(8, 100),
+(9, 1000)
 ;
 
 
