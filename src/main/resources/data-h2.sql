@@ -49,13 +49,13 @@ insert into orders (id, username, customer, note, take_away, service_number, ser
 (2, 'lorenzo', 'Sandro Pertini', 'test', true, 0, 0, 4.0, '2025-07-10 09:49:00', '2025-07-10 09:50:01')
 ;
 
-insert into orders_products (order_id, product_id, price, quantity, note) VALUES
-(1, 2, 0.8, 3, null),
-(1, 1, 8, 3, null),
-(1, 5, 1.5, 2, null),
-(1, 6, 2.0, 1, null),
-(2, 2, 0.8, 5, null),
-(2, 5, 1.5, 5, null)
+insert into orders_products (order_id, product_id, price, quantity, note, idx) VALUES
+(1, 2, 0.8, 3, null, 1),
+(1, 1, 8, 3, null, 2),
+(1, 5, 1.5, 2, null, 3),
+(1, 6, 2.0, 1, null, 4),
+(2, 2, 0.8, 5, null, 1),
+(2, 5, 1.5, 5, null, 2)
 
 ;
 
@@ -64,7 +64,7 @@ insert into monitors (id, name) VALUES
 (2, 'Test')
 ;
 
-insert into monitors_products (monitor_id, product_id, priority) VALUES
+insert into monitors_products (monitor_id, product_id, idx) VALUES
 (1, 1, 2),
 (1, 4, 1),
 (1, 3, 3),

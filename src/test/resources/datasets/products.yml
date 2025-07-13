@@ -1,0 +1,94 @@
+products:
+  - id: 1
+    name: Tordelli
+    department_id: 1
+    course_id: 1
+    price: 8
+    created: "[now]"
+    last_update: "[now]"
+    sell_locked: 0
+  - id: 2
+    name: Panzanelle
+    department_id: 1
+    course_id: 3
+    price: 0.8
+    created: "[now]"
+    last_update: "[now]"
+    sell_locked: 0
+  - id: 3
+    name: Grigliata Salsicce
+    department_id: 2
+    course_id: 3
+    price: 4.5
+    created: "[now]"
+    last_update: "[now]"
+    sell_locked: 0
+  - id: 4
+    name: Grigliata Rosticciana
+    department_id: 2
+    course_id: 3
+    price: 6.5
+    created: "[now]"
+    last_update: "[now]"
+    sell_locked: 0
+  - id: 5
+    name: Stracchino
+    department_id: 1
+    course_id: 3
+    price: 1.5
+    created: "[now]"
+    last_update: "[now]"
+    sell_locked: 0
+  - id: 6
+    name: Bottiglia Acqua 1.5 litri
+    department_id: 3
+    course_id: 4
+    price: 2.0
+    created: "[now]"
+    last_update: "[now]"
+    sell_locked: 0
+  - id: 7
+    name: Tordelli con formaggio
+    department_id: 3
+    course_id: 4
+    price: 2.0
+    created: "[now]"
+    last_update: "[now]"
+    sell_locked: 0
+    parent_id: 1
+  - id: 8
+    name: Sell Locked
+    department_id: 3
+    course_id: 4
+    price: 2.0
+    created: "[now]"
+    last_update: "[now]"
+    sell_locked: 1
+  - id: 9
+    name: Bottiglia Acqua 0.5 litri
+    department_id: 3
+    course_id: 3
+    price: 1.0
+    created: "[now]"
+    last_update: "[now]"
+    sell_locked: 0
+
+products_quantity:
+  - product_id: 1
+    quantity: 200
+  - product_id: 2
+    quantity: 500
+  - product_id: 3
+    quantity: 75
+  - product_id: 4
+    quantity: 100
+  - product_id: 5
+    quantity: 30
+  - product_id: 6
+    quantity: 1000
+  - product_id: 7
+    quantity: 0
+  - product_id: 8
+    quantity: 100
+  - product_id: 9
+    quantity: 1000

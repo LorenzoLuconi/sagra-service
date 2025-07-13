@@ -1,11 +1,10 @@
 package it.loreluc.sagraservice;
 
+import com.github.database.rider.core.api.dataset.DataSet;
 import it.loreluc.sagraservice.error.InvalidProduct;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
@@ -14,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class ProductTest extends CommonTest {
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml"}, cleanBefore = true)
     public void product_read_by_id() throws Exception {
         this.mockMvc.perform(get("/v1/products/{id}", 1).accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
@@ -31,6 +31,7 @@ public class ProductTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml"}, cleanBefore = true)
     public void product_linked_read_by_id() throws Exception {
         this.mockMvc.perform(get("/v1/products/{id}", 7).accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
@@ -49,6 +50,7 @@ public class ProductTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml"}, cleanBefore = true)
     public void product_read_not_found() throws Exception {
         this.mockMvc.perform(get("/v1/products/{id}", 1111).accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
@@ -58,6 +60,7 @@ public class ProductTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml"}, cleanBefore = true)
     public void course_create() throws Exception {
         final String request = """
                 {
@@ -89,6 +92,7 @@ public class ProductTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml"}, cleanBefore = true)
     public void course_create_linked() throws Exception {
         final String request = """
                 {
@@ -122,6 +126,7 @@ public class ProductTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml"}, cleanBefore = true)
     public void product_create_department_not_found() throws Exception {
         final String request = """
                 {
@@ -148,6 +153,7 @@ public class ProductTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml"}, cleanBefore = true)
     public void product_create_course_not_found() throws Exception {
         final String request = """
                 {
@@ -174,6 +180,7 @@ public class ProductTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml"}, cleanBefore = true)
     public void product_create_parent_not_found() throws Exception {
         final String request = """
                 {
@@ -201,6 +208,7 @@ public class ProductTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml"}, cleanBefore = true)
     public void product_create_invalid_parent() throws Exception {
         final String request = """
                 {
@@ -228,6 +236,7 @@ public class ProductTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml"}, cleanBefore = true)
     public void product_create_conflict_name() throws Exception {
         final String request = """
                 {
@@ -253,6 +262,7 @@ public class ProductTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml"}, cleanBefore = true)
     public void product_delete() throws Exception {
         this.mockMvc.perform(delete("/v1/products/7")
                         .accept(MediaType.APPLICATION_JSON)
@@ -263,6 +273,7 @@ public class ProductTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml"}, cleanBefore = true)
     public void product_delete_conflict() throws Exception {
         this.mockMvc.perform(delete("/v1/products/1")
                         .accept(MediaType.APPLICATION_JSON)
@@ -274,6 +285,7 @@ public class ProductTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml"}, cleanBefore = true)
     public void product_sell_lock() throws Exception {
         this.mockMvc.perform(put("/v1/products/1/sellLock")
                         .accept(MediaType.APPLICATION_JSON)
@@ -295,7 +307,7 @@ public class ProductTest extends CommonTest {
     }
 
     @Test
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    @DataSet( value = {"courses.yml","departments.yml","products.yml"}, cleanBefore = true)
     public void product_update_quantity() throws Exception {
 
         final int productId = 1;
@@ -341,6 +353,7 @@ public class ProductTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml"}, cleanBefore = true)
     public void product_update_quantity_not_enough() throws Exception {
 
         final int productId = 1;
@@ -366,6 +379,7 @@ public class ProductTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml"}, cleanBefore = true)
     public void product_search() throws Exception {
         this.mockMvc.perform(get("/v1/products")
                         .accept(MediaType.APPLICATION_JSON)
@@ -379,6 +393,7 @@ public class ProductTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml"}, cleanBefore = true)
     public void product_search_by_name() throws Exception {
         this.mockMvc.perform(get("/v1/products?name=Tordelli")
                         .accept(MediaType.APPLICATION_JSON)
@@ -392,6 +407,7 @@ public class ProductTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml"}, cleanBefore = true)
     public void product_search_by_department() throws Exception {
         this.mockMvc.perform(get("/v1/products?departmentId=2")
                         .accept(MediaType.APPLICATION_JSON)
@@ -405,6 +421,7 @@ public class ProductTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml"}, cleanBefore = true)
     public void product_search_by_course() throws Exception {
         this.mockMvc.perform(get("/v1/products?courseId=4")
                         .accept(MediaType.APPLICATION_JSON)
@@ -416,6 +433,7 @@ public class ProductTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml"}, cleanBefore = true)
     public void product_update() throws Exception {
         final String request = """
                 {
@@ -447,6 +465,7 @@ public class ProductTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml"}, cleanBefore = true)
     public void product_update2() throws Exception {
         final String request = """
                 {
@@ -467,6 +486,7 @@ public class ProductTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml"}, cleanBefore = true)
     public void product_update_conflict() throws Exception {
         final String request = """
                 {

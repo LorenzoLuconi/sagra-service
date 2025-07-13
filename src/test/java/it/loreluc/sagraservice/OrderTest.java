@@ -1,26 +1,21 @@
 package it.loreluc.sagraservice;
 
+import com.github.database.rider.core.api.dataset.DataSet;
 import com.jayway.jsonpath.JsonPath;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class OrderTest extends CommonTest {
 
     @Test
-    @Order(50)
+    @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml"}, cleanBefore = true)
     public void order_read_by_id() throws Exception {
         this.mockMvc.perform(get("/v1/orders/{id}", 1).accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
@@ -51,8 +46,8 @@ public class OrderTest extends CommonTest {
         ;
     }
 
-    @Order(50)
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml"}, cleanBefore = true)
     public void order_read_not_found() throws Exception {
         this.mockMvc.perform(get("/v1/orders/{id}", 1111).accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
@@ -61,8 +56,8 @@ public class OrderTest extends CommonTest {
         ;
     }
 
-    @Order(50)
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml"}, cleanBefore = true)
     public void order_create() throws Exception {
         final String request = """
                 {
@@ -110,8 +105,8 @@ public class OrderTest extends CommonTest {
         ;
     }
 
-    @Order(50)
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml"}, cleanBefore = true)
     public void order_create_duplicated_products() throws Exception {
         final String request = """
                 {
@@ -143,8 +138,8 @@ public class OrderTest extends CommonTest {
         ;
     }
 
-    @Order(50)
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml"}, cleanBefore = true)
     public void order_create_no_service() throws Exception {
         final String request = """
                 {
@@ -179,8 +174,8 @@ public class OrderTest extends CommonTest {
         ;
     }
 
-    @Order(50)
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml"}, cleanBefore = true)
     public void order_create_take_away() throws Exception {
         final String request = """
                 {
@@ -228,8 +223,8 @@ public class OrderTest extends CommonTest {
         ;
     }
 
-    @Order(50)
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml"}, cleanBefore = true)
     public void order_create_take_away_with_service() throws Exception {
         final String request = """
                 {
@@ -264,8 +259,8 @@ public class OrderTest extends CommonTest {
         ;
     }
 
-    @Order(50)
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml"}, cleanBefore = true)
     public void order_create_missing_customer() throws Exception {
         final String request = """
                 {
@@ -300,8 +295,8 @@ public class OrderTest extends CommonTest {
         ;
     }
 
-    @Order(50)
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml"}, cleanBefore = true)
     public void order_create_invalid_product() throws Exception {
         final String request = """
                 {
@@ -337,8 +332,8 @@ public class OrderTest extends CommonTest {
         ;
     }
 
-    @Order(50)
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml"}, cleanBefore = true)
     public void order_create_invalid_product_quantity() throws Exception {
         final String request = """
                 {
@@ -374,9 +369,8 @@ public class OrderTest extends CommonTest {
         ;
     }
 
-    @Order(100)
     @Test
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml"}, cleanBefore = true)
     public void order_delete() throws Exception {
 
         checkProductQuantity(2, 500);
@@ -409,8 +403,8 @@ public class OrderTest extends CommonTest {
         checkProductQuantity(5, 35);
     }
 
-    @Order(50)
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml"}, cleanBefore = true)
     public void order_delete_not_found() throws Exception {
         this.mockMvc.perform(delete("/v1/orders/{id}", 2222)
                         .accept(MediaType.APPLICATION_JSON))
@@ -420,14 +414,14 @@ public class OrderTest extends CommonTest {
         ;
     }
 
-    @Order(110)
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml"}, cleanBefore = true)
     public void order_update_customer() throws Exception {
 
         // Quantità devono rimanere uguali
         checkProductQuantity(1, 200);
-        checkProductQuantity(2, 505);
-        checkProductQuantity(5, 35);
+        checkProductQuantity(2, 500);
+        checkProductQuantity(5, 30);
         checkProductQuantity(6, 1000);
 
         final String request = """
@@ -471,18 +465,18 @@ public class OrderTest extends CommonTest {
         ;
 
         checkProductQuantity(1, 200);
-        checkProductQuantity(2, 505);
-        checkProductQuantity(5, 35);
+        checkProductQuantity(2, 500);
+        checkProductQuantity(5, 30);
         checkProductQuantity(6, 1000);
     }
 
-    @Order(110)
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml"}, cleanBefore = true)
     public void order_update_service() throws Exception {
 
         checkProductQuantity(1, 200);
-        checkProductQuantity(2, 505);
-        checkProductQuantity(5, 35);
+        checkProductQuantity(2, 500);
+        checkProductQuantity(5, 30);
         checkProductQuantity(6, 1000);
 
         final String request = """
@@ -525,22 +519,21 @@ public class OrderTest extends CommonTest {
         ;
 
         checkProductQuantity(1, 200);
-        checkProductQuantity(2, 505);
-        checkProductQuantity(5, 35);
+        checkProductQuantity(2, 500);
+        checkProductQuantity(5, 30);
         checkProductQuantity(6, 1000);
     }
 
 
 
-    @Order(120)
     @Test
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml"}, cleanBefore = true)
     public void order_update_remove_product() throws Exception {
 
         final int quantity1 = checkProductQuantity(1, 200);
         final int quantity2 = checkProductQuantity(6, 1000);
-        checkProductQuantity(2, 505);
-        checkProductQuantity(5, 35);
+        checkProductQuantity(2, 500);
+        checkProductQuantity(5, 30);
 
         this.mockMvc.perform(get("/v1/orders/{id}", 1)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -592,19 +585,18 @@ public class OrderTest extends CommonTest {
 
         checkProductQuantity(1, quantity1 + 3);
         checkProductQuantity(6, quantity2 + 1);
-        checkProductQuantity(2, 505);
-        checkProductQuantity(5, 35);
+        checkProductQuantity(2, 500);
+        checkProductQuantity(5, 30);
     }
 
 
 
-    @Order(130)
     @Test
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void order_update_add_product() throws Exception {
+    @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml"}, cleanBefore = true)
+    public void order_update_chenge_quantity() throws Exception {
 
-        final int quantity1 = checkProductQuantity(2, 505);
-        final int quantity2 = checkProductQuantity(5, 35);
+        final int quantity1 = checkProductQuantity(2, 500);
+        final int quantity2 = checkProductQuantity(6, 1000);
 
         this.mockMvc.perform(get("/v1/orders/{id}", 1)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -613,7 +605,7 @@ public class OrderTest extends CommonTest {
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
-                .andExpect(jsonPath("$.products", hasSize(2)))
+                .andExpect(jsonPath("$.products", hasSize(4)))
         ;
 
         final String request = """
@@ -625,7 +617,7 @@ public class OrderTest extends CommonTest {
                       "products": [
                           {
                                "productId": 2,
-                               "quantity": 3,
+                               "quantity": 2,
                                "price": 0.8
                            },
                            {
@@ -640,7 +632,7 @@ public class OrderTest extends CommonTest {
                            },
                            {
                                "productId": 6,
-                               "quantity": 1,
+                               "quantity": 2,
                                "price": 2.0
                            }
                       ]
@@ -656,11 +648,11 @@ public class OrderTest extends CommonTest {
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.serviceNumber", is(6)))
                 .andExpect(jsonPath("$.serviceCost", is(3.0)))
-                .andExpect(jsonPath("$.totalAmount", is(34.4)))
+                .andExpect(jsonPath("$.totalAmount", is(35.6)))
                 .andExpect(jsonPath("$.products" ,hasSize(4)))
                 .andExpect(jsonPath("$.products[0].productId", is(2)))
                 .andExpect(jsonPath("$.products[0].price", is(0.8)))
-                .andExpect(jsonPath("$.products[0].quantity", is(3)))
+                .andExpect(jsonPath("$.products[0].quantity", is(2)))
                 .andExpect(jsonPath("$.products[1].productId", is(1)))
                 .andExpect(jsonPath("$.products[1].price", is(8.0)))
                 .andExpect(jsonPath("$.products[1].quantity", is(3)))
@@ -669,14 +661,14 @@ public class OrderTest extends CommonTest {
                 .andExpect(jsonPath("$.products[2].quantity", is(2)))
                 .andExpect(jsonPath("$.products[3].productId", is(6)))
                 .andExpect(jsonPath("$.products[3].price", is(2.0)))
-                .andExpect(jsonPath("$.products[3].quantity", is(1)))
+                .andExpect(jsonPath("$.products[3].quantity", is(2)))
         ;
 
-        checkProductQuantity(2, quantity1 - 3);
-        checkProductQuantity(5, quantity2 - 1);
+        checkProductQuantity(2, quantity1 + 1);
+        checkProductQuantity(6, quantity2 - 1);
     }
 
-    public void order_update_change_quantity() {
+    public void order_update_add_prod() {
 
     }
 

@@ -1,10 +1,10 @@
 package it.loreluc.sagraservice.monitor.resource;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -16,5 +16,5 @@ public class MonitorResource {
     private String name;
 
     @NotEmpty
-    private List<@Valid MonitorProductResource> products;
+    private List<Long> products = new ArrayList<>();
 }

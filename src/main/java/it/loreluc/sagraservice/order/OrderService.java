@@ -54,7 +54,12 @@ public class OrderService {
         // FIXME manca gestione dell'utente
         order.setUser(usersRepository.findById("lorenzo").orElseThrow(() -> new RuntimeException("User not found")));
 
-        orderRequest.getProducts().forEach(orderProductRequest -> addProductToOrder(order, orderProductRequest));
+        int idx = 1;
+        for (OrderProductRequest orderProductRequest : orderRequest.getProducts()) {
+            final OrderProduct orderProduct = addProductToOrder(order, orderProductRequest);
+            orderProduct.setIdx(idx++);
+        }
+
         order.setTotalAmount(calculateTotalAmount(order));
 
         return orderRepository.save(order);
@@ -107,6 +112,7 @@ public class OrderService {
                 if ( ! productService.updateProductQuantity(product, diff) ) {
                     throw new SagraQuantitaNonSufficiente(InvalidProduct.of(product.getId(), NOT_ENOUGH_QUANTITY));
                 }
+                orderProduct.setQuantity(orderProductRequest.getQuantity());
                 order.setLastUpdate(LocalDateTime.now());
             }
         }
@@ -134,6 +140,16 @@ public class OrderService {
         });
 
         order.setTotalAmount(calculateTotalAmount(order));
+
+        if ( order.getProducts().size() != orderRequest.getProducts().size() ) {
+            log.error("Dopo l'aggiornamento dell'ordine il numero di elementi tra ordine e orderRequest non corrisponde: {}, {}", orderRequest, order);
+            throw new RuntimeException("Non corrispondenza tra numero prodotti ordinati e richiesta aggiornamento ordine");
+        }
+
+        int idx = 1;
+        for (final OrderProduct orderProduct : order.getProducts()) {
+            orderProduct.setIdx(idx++);
+        }
 
         return orderRepository.save(order);
     }
@@ -203,7 +219,7 @@ public class OrderService {
         return total;
     }
 
-    private void addProductToOrder(Order order, OrderProductRequest orderProductRequest) {
+    private OrderProduct addProductToOrder(Order order, OrderProductRequest orderProductRequest) {
         final Product product;
         try {
             product = productService.findById(orderProductRequest.getProductId());
@@ -229,6 +245,8 @@ public class OrderService {
         orderProduct.setQuantity(orderProductRequest.getQuantity());
         orderProduct.setNote(orderProduct.getNote());
         order.getProducts().add(orderProduct);
+
+        return orderProduct;
     }
 
     private Optional<BigDecimal> getDiscountRate(OrderRequest orderRequest) {

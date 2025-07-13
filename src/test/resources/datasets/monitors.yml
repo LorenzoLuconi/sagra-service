@@ -1,0 +1,19 @@
+monitors:
+  - id: 1
+    name: Cucina
+  - id: 2
+    name: Test
+
+monitors_products:
+  - monitor_id: 1
+    product_id: 1
+    idx: 2
+  - monitor_id: 1
+    product_id: 4
+    idx: 1
+  - monitor_id: 1
+    product_id: 3
+    idx: 3
+  - monitor_id: 2
+    product_id: 1
+    idx: 1

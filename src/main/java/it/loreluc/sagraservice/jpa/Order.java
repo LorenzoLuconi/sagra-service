@@ -63,6 +63,7 @@ public class Order {
     private LocalDateTime lastUpdate;
 
     @NotEmpty
+    @OrderBy("idx")
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<OrderProduct> products = new ArrayList<>();
 }

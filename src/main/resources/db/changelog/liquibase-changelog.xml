@@ -153,6 +153,9 @@
                 <constraints nullable="false" />
             </column>
             <column name="note" type="varchar(255)" />
+            <column name="idx" type="integer">
+                <constraints nullable="false" />
+            </column>
         </createTable>
 
         <createTable tableName="discounts">
@@ -187,7 +190,7 @@
             <column name="product_id" type="bigint" >
                 <constraints referencedTableName="products" referencedColumnNames="id" foreignKeyName="fk_monitors_products_product" nullable="false" deleteCascade="true" primaryKey="true" primaryKeyName="PK_MONITOR_PRODUCT"/>
             </column>
-            <column name="priority" type="smallint">
+            <column name="idx" type="smallint">
                 <constraints nullable="false" />
             </column>
         </createTable>

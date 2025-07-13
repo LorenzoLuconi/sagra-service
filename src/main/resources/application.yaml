@@ -38,3 +38,14 @@ spring:
   h2:
     console:
       enabled: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+  liquibase:
+    drop-first: true
+  sql:
+    init:
+      mode: never

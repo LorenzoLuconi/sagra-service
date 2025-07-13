@@ -1,5 +1,6 @@
 package it.loreluc.sagraservice;
 
+import com.github.database.rider.core.api.dataset.DataSet;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -12,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class DiscountTest extends CommonTest {
 
     @Test
+    @DataSet( value = "discounts.yml", cleanBefore = true)
     public void discount_read_by_id() throws Exception {
         this.mockMvc.perform(get("/v1/discounts/{id}", 1).accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
@@ -23,6 +25,7 @@ public class DiscountTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = "discounts.yml", cleanBefore = true)
     public void discount_read_not_found() throws Exception {
         this.mockMvc.perform(get("/v1/discounts/{id}", 1111).accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
@@ -32,6 +35,7 @@ public class DiscountTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = "discounts.yml", cleanBefore = true)
     public void discount_create() throws Exception {
         final String request = """
                 {
@@ -53,6 +57,7 @@ public class DiscountTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = "discounts.yml", cleanBefore = true)
     public void discount_create_wrong_rate() throws Exception {
         final String request = """
                 {
@@ -76,6 +81,7 @@ public class DiscountTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = "discounts.yml", cleanBefore = true)
     public void discount_create_conflict() throws Exception {
         final String request = """
                 {
@@ -95,6 +101,7 @@ public class DiscountTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = "discounts.yml", cleanBefore = true)
     public void discount_delete() throws Exception {
         this.mockMvc.perform(delete("/v1/discounts/{id}", 2).accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
@@ -103,6 +110,7 @@ public class DiscountTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = "discounts.yml", cleanBefore = true)
     public void discount_update() throws Exception {
         final String request = """
                 {
@@ -124,6 +132,7 @@ public class DiscountTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = "discounts.yml", cleanBefore = true)
     public void discount_update_conflict() throws Exception {
         final String request = """
                 {
@@ -143,6 +152,7 @@ public class DiscountTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = "discounts.yml", cleanBefore = true)
     public void discount_search() throws Exception {
         this.mockMvc.perform(get("/v1/discounts")
                         .accept(MediaType.APPLICATION_JSON)
@@ -156,6 +166,7 @@ public class DiscountTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = "discounts.yml", cleanBefore = true)
     public void discount_search_by_name() throws Exception {
         this.mockMvc.perform(get("/v1/discounts?name=speciali")
                         .accept(MediaType.APPLICATION_JSON)

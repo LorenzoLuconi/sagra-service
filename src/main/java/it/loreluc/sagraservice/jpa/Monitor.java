@@ -24,7 +24,16 @@ public class Monitor {
     @Length(max = 255)
     private String name;
 
-    @OrderBy("priority")
+    @OrderBy("idx")
     @OneToMany(mappedBy = "monitor", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<MonitorProduct> products = new ArrayList<>();
+
+    @Transient
+    public List<Long> getProductIds() {
+        if ( products == null) {
+            return null;
+        }
+
+        return products.stream().map(mp -> mp.getProduct().getId()).toList();
+    }
 }

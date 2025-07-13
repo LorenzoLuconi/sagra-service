@@ -51,4 +51,6 @@ public class OrderProduct {
 
     @Length(max=255)
     private String note;
+
+    private Integer idx;
 }
