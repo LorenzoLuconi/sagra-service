@@ -141,6 +141,93 @@ public class OrderTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml","discounts.yml"}, cleanBefore = true)
+    public void order_create_discount() throws Exception {
+
+        checkProductQuantity(2, 500);
+        checkProductQuantity(1, 200);
+
+        final String request = """
+                {
+                   "customer": " Francesco Cossiga",
+                   "takeAway": false,
+                   "note": "Allergico" ,
+                   "serviceNumber": 3,
+                   "username": "lorenzo",
+                   "discountId": 2,
+                   "products": [
+                     {
+                       "productId": 2,
+                       "quantity": 5
+                     },
+                     {
+                       "productId": 1,
+                       "quantity": 3
+                     }
+                   ]
+                 }
+                """;
+        final MvcResult result = this.mockMvc.perform(post("/v1/orders")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(request)
+                )
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id", notNullValue()))
+                .andExpect(jsonPath("$.customer", is("Francesco Cossiga")))
+                .andExpect(jsonPath("$.note", is("Allergico")))
+                .andExpect(jsonPath("$.username", is("lorenzo")))
+                .andExpect(jsonPath("$.discountRate", is(100.0)))
+                .andExpect(jsonPath("$.takeAway", is(false)))
+                .andExpect(jsonPath("$.serviceNumber", is(3)))
+                .andExpect(jsonPath("$.serviceCost", is(1.5)))
+                .andExpect(jsonPath("$.totalAmount", is(0.0)))
+                .andExpect(jsonPath("$.created", notNullValue()))
+                .andExpect(jsonPath("$.lastUpdate", notNullValue()))
+                .andExpect(jsonPath("$.products", hasSize(2)))
+                .andExpect(jsonPath("$.products[0].productId", is(2)))
+                .andExpect(jsonPath("$.products[0].price", is(0.8)))
+                .andExpect(jsonPath("$.products[0].quantity", is(5)))
+                .andExpect(jsonPath("$.products[1].productId", is(1)))
+                .andExpect(jsonPath("$.products[1].price", is(8.0)))
+                .andExpect(jsonPath("$.products[1].quantity", is(3)))
+                .andReturn();
+        ;
+
+        final Integer id = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
+
+
+        this.mockMvc.perform(get("/v1/orders/{id}", id)
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", notNullValue()))
+                .andExpect(jsonPath("$.customer", is("Francesco Cossiga")))
+                .andExpect(jsonPath("$.note", is("Allergico")))
+                .andExpect(jsonPath("$.username", is("lorenzo")))
+                .andExpect(jsonPath("$.discountRate", is(100.0)))
+                .andExpect(jsonPath("$.takeAway", is(false)))
+                .andExpect(jsonPath("$.serviceNumber", is(3)))
+                .andExpect(jsonPath("$.serviceCost", is(1.5)))
+                .andExpect(jsonPath("$.totalAmount", is(0.0)))
+                .andExpect(jsonPath("$.created", notNullValue()))
+                .andExpect(jsonPath("$.lastUpdate", notNullValue()))
+                .andExpect(jsonPath("$.products", hasSize(2)))
+                .andExpect(jsonPath("$.products[0].productId", is(2)))
+                .andExpect(jsonPath("$.products[0].price", is(0.8)))
+                .andExpect(jsonPath("$.products[0].quantity", is(5)))
+                .andExpect(jsonPath("$.products[1].productId", is(1)))
+                .andExpect(jsonPath("$.products[1].price", is(8.0)))
+                .andExpect(jsonPath("$.products[1].quantity", is(3)))
+        ;
+
+        checkProductQuantity(2, 500 - 5);
+        checkProductQuantity(1, 200 - 3);
+    }
+
+    @Test
     @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml"}, cleanBefore = true)
     public void order_create_sell_locked() throws Exception {
         final String request = """
@@ -238,6 +325,39 @@ public class OrderTest extends CommonTest {
                      },
                      {
                        "productId": 2,
+                       "quantity": 3
+                     }
+                   ]
+                 }
+                """;
+        this.mockMvc.perform(post("/v1/orders")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(request)
+                )
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", notNullValue()))
+        ;
+    }
+
+    @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml"}, cleanBefore = true)
+    public void order_create_product_not_found() throws Exception {
+        final String request = """
+                {
+                   "customer": "Francesco Cossiga",
+                   "takeAway": false,
+                   "note": "Allergico",
+                   "serviceNumber": 3,
+                   "username": "lorenzo",
+                   "products": [
+                     {
+                       "productId": 2,
+                       "quantity": 5
+                     },
+                     {
+                       "productId": 2222,
                        "quantity": 3
                      }
                    ]
@@ -578,6 +698,61 @@ public class OrderTest extends CommonTest {
                 .andExpect(jsonPath("$.serviceNumber", is(6)))
                 .andExpect(jsonPath("$.serviceCost", is(3.0)))
                 .andExpect(jsonPath("$.totalAmount", is(34.4)))
+        ;
+
+        checkProductQuantity(1, 200);
+        checkProductQuantity(2, 500);
+        checkProductQuantity(5, 30);
+        checkProductQuantity(6, 1000);
+    }
+
+    @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml","discounts.yml"}, cleanBefore = true)
+    public void order_update_discount() throws Exception {
+
+        // Quantità devono rimanere uguali
+        checkProductQuantity(1, 200);
+        checkProductQuantity(2, 500);
+        checkProductQuantity(5, 30);
+        checkProductQuantity(6, 1000);
+
+        final String request = """
+                {
+                      "customer": "Lorenzo Luconi",
+                      "takeAway": false,
+                      "serviceNumber": 6,
+                      "discountId": 1,
+                      "username": "lorenzo",
+                      "products": [
+                          {
+                              "productId": 2,
+                              "quantity": 3
+                          },
+                          {
+                              "productId": 1,
+                              "quantity": 3
+                          },
+                          {
+                              "productId": 5,
+                              "quantity": 2
+                          },
+                          {
+                              "productId": 6,
+                              "quantity": 1
+                          }
+                      ]
+                  }
+                """;
+        this.mockMvc.perform(put("/v1/orders/{id}", 1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(request)
+                )
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.discountRate", is(20.0)))
+                .andExpect(jsonPath("$.totalAmount", is(27.52)))
         ;
 
         checkProductQuantity(1, 200);
@@ -1453,6 +1628,39 @@ public class OrderTest extends CommonTest {
                 .andReturn();
 
         return JsonPath.read(result.getResponse().getContentAsString(), "$.quantity");
+    }
+
+    @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml"}, cleanBefore = true)
+    public void order_search_by_customers() throws Exception {
+        this.mockMvc.perform(get("/v1/orders?customer=lore").accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].customer", is("Lorenzo Luconi")))
+        ;
+    }
+
+    @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml"}, cleanBefore = true)
+    public void order_search_by_username() throws Exception {
+        this.mockMvc.perform(get("/v1/orders?username=test").accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id", is(2)))
+        ;
+    }
+
+    @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml"}, cleanBefore = true)
+    public void order_search_by_created() throws Exception {
+        this.mockMvc.perform(get("/v1/orders?created=2025-07-11").accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id", is(2)))
+        ;
     }
 
 }
