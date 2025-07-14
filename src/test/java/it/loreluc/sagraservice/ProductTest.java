@@ -274,6 +274,7 @@ public class ProductTest extends CommonTest {
 
     @Test
     @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml"}, cleanBefore = true)
+    //@ExpectedDataSet(value = {"courses.yml","departments.yml","products.yml","users.yml", "expected_orders_update_mixed.yml"})
     public void product_delete_conflict() throws Exception {
         this.mockMvc.perform(delete("/v1/products/1")
                         .accept(MediaType.APPLICATION_JSON)

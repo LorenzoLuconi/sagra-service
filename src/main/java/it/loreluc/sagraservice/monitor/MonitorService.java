@@ -10,6 +10,7 @@ import it.loreluc.sagraservice.jpa.MonitorProductId;
 import it.loreluc.sagraservice.jpa.Product;
 import it.loreluc.sagraservice.monitor.resource.MonitorResource;
 import it.loreluc.sagraservice.product.ProductService;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ import java.util.Objects;
 public class MonitorService {
     private final MonitorRepository monitorRepository;
     private final ProductService productService;
+    private final EntityManager entityManager;
 
     public Monitor findById(Long monitorId) {
         return monitorRepository.findById(Objects.requireNonNull(monitorId))
@@ -52,6 +54,7 @@ public class MonitorService {
 
         monitor.setName(monitorResource.getName());
         monitor.getProducts().clear();
+
         setMonitorProducts(monitor, monitorResource.getProducts());
 
         return monitorRepository.save(monitor);

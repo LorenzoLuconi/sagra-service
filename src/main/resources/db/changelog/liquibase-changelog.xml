@@ -154,7 +154,7 @@
             </column>
             <column name="note" type="varchar(255)" />
             <column name="idx" type="integer">
-                <constraints nullable="false" />
+                <constraints nullable="true" />
             </column>
         </createTable>
 

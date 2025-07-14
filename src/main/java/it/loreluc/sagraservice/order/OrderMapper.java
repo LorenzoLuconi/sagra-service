@@ -23,7 +23,19 @@ public interface OrderMapper {
     Order toEntity(OrderRequest orderRequest);
 
     @Mapping(target = "username", source = "user.username")
+    // @Mapping(target = "products", ignore = true)
     OrderResponse toResponse(Order order);
+
+//    @AfterMapping
+//    default void afterMapping(@MappingTarget OrderResponse orderResponse, Order order) {
+//        // Li estraiamo ordinati, ma in caso di modifica a volte è necessario riordinarli
+//        orderResponse.setProducts(
+//            order.getProducts().stream()
+//                .sorted(Comparator.comparing(OrderProduct::getIdx))
+//                .map(this::toResponse)
+//                .toList()
+//        );
+//    }
 
     @Mapping(target = "productId", source = "product.id")
     OrderProductResponse toResponse(OrderProduct  orderProduct);

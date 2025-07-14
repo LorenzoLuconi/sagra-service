@@ -25,7 +25,7 @@ public class Monitor {
     private String name;
 
     @OrderBy("idx")
-    @OneToMany(mappedBy = "monitor", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "monitor", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private List<MonitorProduct> products = new ArrayList<>();
 
     @Transient

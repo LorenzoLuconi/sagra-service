@@ -36,7 +36,7 @@ public class OrderService {
     private final ProductService productService;
     private final SagraSettings settings;
     private final UsersRepository usersRepository;
-    private final EntityManager em;
+    private final EntityManager entityManager;
     private final DiscountService discountService;
 
     public Order getOrderById(Long orderId) {
@@ -54,10 +54,9 @@ public class OrderService {
         // FIXME manca gestione dell'utente
         order.setUser(usersRepository.findById("lorenzo").orElseThrow(() -> new RuntimeException("User not found")));
 
-        int idx = 1;
+        int idx = 0;
         for (OrderProductRequest orderProductRequest : orderRequest.getProducts()) {
-            final OrderProduct orderProduct = addProductToOrder(order, orderProductRequest);
-            orderProduct.setIdx(idx++);
+            addProductToOrder(order, orderProductRequest, idx++);
         }
 
         order.setTotalAmount(calculateTotalAmount(order));
@@ -92,13 +91,14 @@ public class OrderService {
         final Map<Long, OrderProduct> orderedProductsMap = order.getProducts().stream()
                 .collect(Collectors.toMap(o -> o.getProduct().getId(), Function.identity()));
 
-        for (final OrderProductRequest orderProductRequest : orderRequest.getProducts()) {
+        for (int i = 0; i < orderRequest.getProducts().size(); i++) {
+            final OrderProductRequest orderProductRequest = orderRequest.getProducts().get(i);
             final OrderProduct orderProduct = orderedProductsMap.get(orderProductRequest.getProductId());
 
             // Nuovo prodotto da aggiungere
             if ( orderProduct == null ) {
                 log.debug("Prodotto da aggiungere all'ordine: orderId={}, {}", orderId, orderProductRequest);
-                addProductToOrder(order, orderProductRequest);
+                addProductToOrder(order, orderProductRequest, i);
                 order.setLastUpdate(LocalDateTime.now());
                 continue;
             }
@@ -115,6 +115,8 @@ public class OrderService {
                 orderProduct.setQuantity(orderProductRequest.getQuantity());
                 order.setLastUpdate(LocalDateTime.now());
             }
+
+            orderProduct.setIdx(i);
         }
 
         final Set<Long> newOrderedProductsSet = orderRequest.getProducts().stream().map(OrderProductRequest::getProductId).collect(Collectors.toSet());
@@ -122,7 +124,7 @@ public class OrderService {
 
         // Individuiamo i prodotti da rimuovere
         order.getProducts().forEach(orderProduct -> {
-            if ( ! newOrderedProductsSet.contains(orderProduct.getProductId()) ) {
+            if ( ! newOrderedProductsSet.contains(orderProduct.getProduct().getId()) ) {
                 productsToRemove.add(orderProduct);
             }
         });
@@ -136,6 +138,7 @@ public class OrderService {
 
             log.debug("Modifica ordine rimozione prodotto: ordineId={}, removed={}", orderId, orderProduct);
             productService.updateProductQuantity(orderProduct.getProduct(), orderProduct.getQuantity());
+            entityManager.remove(orderProduct);
             order.setLastUpdate(LocalDateTime.now());
         });
 
@@ -146,17 +149,12 @@ public class OrderService {
             throw new RuntimeException("Non corrispondenza tra numero prodotti ordinati e richiesta aggiornamento ordine");
         }
 
-        int idx = 1;
-        for (final OrderProduct orderProduct : order.getProducts()) {
-            orderProduct.setIdx(idx++);
-        }
-
         return orderRepository.save(order);
     }
 
     public List<Order> searchOrders(SearchOrderRequest searchOrderRequest, Pageable pageable) {
         final QOrder o = QOrder.order;
-        final JPAQuery<Order> query = new JPAQuery<Order>(em)
+        final JPAQuery<Order> query = new JPAQuery<Order>(entityManager)
                 .select(o)
                 .from(o);
 
@@ -219,7 +217,7 @@ public class OrderService {
         return total;
     }
 
-    private OrderProduct addProductToOrder(Order order, OrderProductRequest orderProductRequest) {
+    private OrderProduct addProductToOrder(Order order, OrderProductRequest orderProductRequest, int idx) {
         final Product product;
         try {
             product = productService.findById(orderProductRequest.getProductId());
@@ -239,12 +237,14 @@ public class OrderService {
 
         final OrderProduct orderProduct = new OrderProduct();
         orderProduct.setOrder(order);
-
+        orderProduct.setOrderId(order.getId());
         orderProduct.setProduct(product);
+        orderProduct.setProductId(product.getId());
         orderProduct.setPrice(product.getPrice());
         orderProduct.setQuantity(orderProductRequest.getQuantity());
         orderProduct.setNote(orderProduct.getNote());
-        order.getProducts().add(orderProduct);
+        orderProduct.setIdx(idx);
+        order.getProducts().add(idx, orderProduct);
 
         return orderProduct;
     }

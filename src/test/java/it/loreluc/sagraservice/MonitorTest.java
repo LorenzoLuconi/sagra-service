@@ -159,6 +159,19 @@ public class MonitorTest extends CommonTest {
                 .andExpect(jsonPath("$.products[1]", is(2)))
                 .andExpect(jsonPath("$.products[2]", is(3)))
         ;
+
+        this.mockMvc.perform(get("/v1/monitors/{id}", 1)
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.name", is("Cucina 2")))
+                .andExpect(jsonPath("$.products", hasSize(3)))
+                .andExpect(jsonPath("$.products[0]", is(4)))
+                .andExpect(jsonPath("$.products[1]", is(2)))
+                .andExpect(jsonPath("$.products[2]", is(3)))
+        ;
     }
 
     @Test

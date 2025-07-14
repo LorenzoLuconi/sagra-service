@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 @Table(name = "orders_products")
 @Getter
 @Setter
-@ToString(of = {"orderId", "productId", "quantity"})
+@ToString(of = {"orderId", "productId", "quantity","idx"})
 @IdClass(OrderProductId.class)
 @EqualsAndHashCode(of = {"orderId","productId"})
 public class OrderProduct {
@@ -52,5 +52,6 @@ public class OrderProduct {
     @Length(max=255)
     private String note;
 
+    @NotNull
     private Integer idx;
 }
