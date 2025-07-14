@@ -218,11 +218,14 @@ public class MonitorTest extends CommonTest {
                 .andExpect(jsonPath("$.lastUpdate", notNullValue()))
                 .andExpect(jsonPath("$.products", hasSize(3)))
                 .andExpect(jsonPath("$.products[0].name", is("Grigliata Rosticciana")))
-                .andExpect(jsonPath("$.products[0].quantity", is(100)))
+                .andExpect(jsonPath("$.products[0].initialQuantity", is(100)))
+                .andExpect(jsonPath("$.products[0].availableQuantity", is(100)))
                 .andExpect(jsonPath("$.products[1].name", is("Tordelli")))
-                .andExpect(jsonPath("$.products[1].quantity", is(200)))
+                .andExpect(jsonPath("$.products[1].initialQuantity", is(220)))
+                .andExpect(jsonPath("$.products[1].availableQuantity", is(200)))
                 .andExpect(jsonPath("$.products[2].name", is("Grigliata Salsicce")))
-                .andExpect(jsonPath("$.products[2].quantity", is(75)))
+                .andExpect(jsonPath("$.products[2].initialQuantity", is(75)))
+                .andExpect(jsonPath("$.products[2].availableQuantity", is(75)))
         ;
     }
 }

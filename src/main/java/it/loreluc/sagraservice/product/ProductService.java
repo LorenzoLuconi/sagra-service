@@ -2,17 +2,13 @@ package it.loreluc.sagraservice.product;
 
 import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQuery;
-import it.loreluc.sagraservice.course.CourseService;
-import it.loreluc.sagraservice.department.DepartmentService;
 import it.loreluc.sagraservice.error.InvalidValue;
 import it.loreluc.sagraservice.error.SagraBadRequestException;
 import it.loreluc.sagraservice.error.SagraConflictException;
 import it.loreluc.sagraservice.error.SagraNotFoundException;
-import it.loreluc.sagraservice.jpa.Product;
-import it.loreluc.sagraservice.jpa.ProductQuantity;
-import it.loreluc.sagraservice.jpa.QOrderProduct;
-import it.loreluc.sagraservice.jpa.QProduct;
+import it.loreluc.sagraservice.jpa.*;
 import it.loreluc.sagraservice.product.resource.ProductMapper;
+import it.loreluc.sagraservice.product.resource.ProductQuantityInitRequest;
 import it.loreluc.sagraservice.product.resource.ProductRequest;
 import it.loreluc.sagraservice.product.resource.ProductResponse;
 import jakarta.persistence.EntityManager;
@@ -22,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -32,8 +30,6 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final EntityManager entityManager;
     private final ProductMapper productMapper;
-    private final CourseService courseService;
-    private final DepartmentService departmentService;
 
     public Product findById(Long id) {
         return productRepository.findById(id).orElseThrow(() -> new SagraNotFoundException("Prodotto non trovato con id: " + id));
@@ -78,7 +74,8 @@ public class ProductService {
 
         final ProductQuantity productQuantity = new ProductQuantity();
         productQuantity.setProduct(product);
-        productQuantity.setQuantity(0);
+        productQuantity.setInitialQuantity(0);
+        productQuantity.setAvailableQuantity(0);
 
         product.setProductQuantity(productQuantity);
 
@@ -99,12 +96,8 @@ public class ProductService {
     }
 
     @Transactional(rollbackFor = Throwable.class)
-    public boolean updateProductQuantity(Long prodottoId, Integer quantityVariation) {
-        return updateProductQuantity(findById(prodottoId), quantityVariation);
-    }
-
-    @Transactional(rollbackFor = Throwable.class, propagation = Propagation.MANDATORY)
-    public boolean updateProductQuantity(Product product, Integer quantityVariation) {
+    public boolean updateProductQuantityAvailability(Long prodottoId, Integer quantityVariation) {
+        final Product product = findById(prodottoId);
         final Long productId;
         if ( product.getParentId() != null ) {
             productId = product.getParentId();
@@ -113,8 +106,65 @@ public class ProductService {
         }
 
         final int updated = entityManager.createQuery("""
-            update ProductQuantity pq set pq.quantity = pq.quantity + :quantityVariation
-            where pq.product.id = :prodottoId and pq.quantity + :quantityVariation >= 0
+            update ProductQuantity pq set pq.availableQuantity = pq.availableQuantity + :quantityVariation,
+             pq.initialQuantity = pq.initialQuantity + :quantityVariation
+            where pq.product.id = :prodottoId and pq.availableQuantity + :quantityVariation >= 0
+            """)
+                .setParameter("prodottoId", productId)
+                .setParameter("quantityVariation", quantityVariation)
+                .executeUpdate();
+
+        return updated == 1;
+    }
+
+    @Transactional(rollbackFor = Throwable.class)
+    public void initProductsQuantity(List<ProductQuantityInitRequest> productQuantityInitRequests) {
+        final LocalDateTime startDate = LocalDate.now().atStartOfDay();
+        final LocalDateTime endDate = LocalDate.now().plusDays(1).atStartOfDay();
+
+        final QOrder o = QOrder.order;
+
+        final Long count = new JPAQuery<Long>(entityManager)
+                .select(o.count())
+                .from(o)
+                .where(o.created.goe(startDate).and(o.created.lt(endDate)))
+                .fetchOne();
+
+        if ( count != null && count > 0 ) {
+            throw new SagraConflictException(String.format("Sono già presenti %s ordini in data odierna, inizializzazione non possibile", count));
+        }
+
+        productQuantityInitRequests.forEach(pq -> {
+            final Product product;
+            try {
+                product = findById(pq.getProductId());
+            } catch ( SagraNotFoundException e) {
+                throw new SagraBadRequestException(String.format("Prodotto con id %s non trovato", pq.getProductId()));
+            }
+
+            final ProductQuantity productQuantity = product.getProductQuantity();
+
+            if ( product.getParentId() != null ) {
+                throw new SagraBadRequestException(String.format("Il prodotto con id %s, è collegato ad un altro prodotto e non può essere inizializzato", product.getId()));
+            }
+
+            productQuantity.setInitialQuantity(pq.getInitialQuantity());
+            productQuantity.setAvailableQuantity(pq.getInitialQuantity());
+        });
+    }
+
+    @Transactional(rollbackFor = Throwable.class, propagation = Propagation.MANDATORY)
+    public boolean updateProductQuantityForOrder(Product product, Integer quantityVariation) {
+        final Long productId;
+        if ( product.getParentId() != null ) {
+            productId = product.getParentId();
+        } else {
+            productId = product.getId();
+        }
+
+        final int updated = entityManager.createQuery("""
+            update ProductQuantity pq set pq.availableQuantity = pq.availableQuantity + :quantityVariation
+            where pq.product.id = :prodottoId and pq.availableQuantity + :quantityVariation >= 0
             """)
                 .setParameter("prodottoId", productId)
                 .setParameter("quantityVariation", quantityVariation)
@@ -152,9 +202,11 @@ public class ProductService {
         final ProductResponse resource = productMapper.toResource(product);
         if ( product.getParentId() != null ) {
             final Product parent = findById(product.getParentId());
-            resource.setQuantity(parent.getProductQuantity().getQuantity());
+            resource.setInitialQuantity(parent.getProductQuantity().getInitialQuantity());
+            resource.setAvailableQuantity(parent.getProductQuantity().getAvailableQuantity());
         } else {
-            resource.setQuantity(product.getProductQuantity().getQuantity());
+            resource.setAvailableQuantity(product.getProductQuantity().getAvailableQuantity());
+            resource.setInitialQuantity(product.getProductQuantity().getInitialQuantity());
         }
 
         return resource;

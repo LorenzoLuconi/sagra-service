@@ -1619,17 +1619,6 @@ public class OrderTest extends CommonTest {
         checkProductQuantity(9, 1000 - 2 );
     }
 
-    private int checkProductQuantity(int productId, int expectedQuantity) throws Exception {
-        final MvcResult result = this.mockMvc.perform(get("/v1/products/{id}", productId).accept(MediaType.APPLICATION_JSON))
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(productId)))
-                .andExpect(jsonPath("$.quantity", is(expectedQuantity)))
-                .andReturn();
-
-        return JsonPath.read(result.getResponse().getContentAsString(), "$.quantity");
-    }
-
     @Test
     @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml"}, cleanBefore = true)
     public void order_search_by_customers() throws Exception {
@@ -1661,6 +1650,17 @@ public class OrderTest extends CommonTest {
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id", is(2)))
         ;
+    }
+
+    private int checkProductQuantity(int productId, int expectedQuantity) throws Exception {
+        final MvcResult result = this.mockMvc.perform(get("/v1/products/{id}", productId).accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(productId)))
+                .andExpect(jsonPath("$.availableQuantity", is(expectedQuantity)))
+                .andReturn();
+
+        return JsonPath.read(result.getResponse().getContentAsString(), "$.availableQuantity");
     }
 
 }

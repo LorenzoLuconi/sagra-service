@@ -26,16 +26,16 @@ insert into products (id, name, note, department_id, course_id, price, created, 
 
 ;
 
-insert into products_quantity(product_id, quantity) VALUES
-(1, 200),
-(2, 500),
-(3, 75),
-(4, 100),
-(5, 30),
-(6, 1000 ),
-(7, 0),
-(8, 100),
-(9, 1000)
+insert into products_quantity(product_id, initial_quantity, available_quantity) VALUES
+(1, 220, 200),
+(2, 500,500),
+(3, 75, 75),
+(4, 100, 100),
+(5, 30, 30),
+(6, 1000, 1000),
+(7, 0,0 ),
+(8, 100, 100),
+(9, 1000, 1000)
 ;
 
 

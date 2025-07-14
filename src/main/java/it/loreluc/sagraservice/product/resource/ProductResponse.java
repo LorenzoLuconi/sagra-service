@@ -18,7 +18,8 @@ public class ProductResponse {
     private Long courseId;
     private BigDecimal price;
     private boolean sellLocked;
-    private Integer quantity;
+    private Integer initialQuantity;
+    private Integer availableQuantity;
     private Long parentId;
     @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime created;

@@ -69,7 +69,7 @@ public class OrderService {
         final Order order = getOrderById(orderId);
 
         order.getProducts().forEach(op -> {
-            if ( ! productService.updateProductQuantity(op.getProduct(), op.getQuantity()) ) {
+            if ( ! productService.updateProductQuantityForOrder(op.getProduct(), op.getQuantity()) ) {
                 log.error("Nella cancellazione di un ordine non dovrebbe mai esserci un errore durante la restituzione della quantità: {}, {}", order, op);
                 throw new RuntimeException("Si è verificato un errore inatteso nella cancellazione dell'ordine: " + orderId);
             }
@@ -109,7 +109,7 @@ public class OrderService {
                 final Product product = orderProduct.getProduct();
                 log.debug("Quantità modificata per prodotto in ordine: orderId={}, productId={}, quantita orig {} - nuova quantita {} = {}", orderId, orderProduct.getProduct().getId(), orderProduct.getQuantity(), orderProductRequest.getQuantity(), diff);
 
-                if ( ! productService.updateProductQuantity(product, diff) ) {
+                if ( ! productService.updateProductQuantityForOrder(product, diff) ) {
                     throw new SagraQuantitaNonSufficiente(InvalidProduct.of(product.getId(), NOT_ENOUGH_QUANTITY));
                 }
                 orderProduct.setQuantity(orderProductRequest.getQuantity());
@@ -137,7 +137,7 @@ public class OrderService {
             }
 
             log.debug("Modifica ordine rimozione prodotto: ordineId={}, removed={}", orderId, orderProduct);
-            productService.updateProductQuantity(orderProduct.getProduct(), orderProduct.getQuantity());
+            productService.updateProductQuantityForOrder(orderProduct.getProduct(), orderProduct.getQuantity());
             entityManager.remove(orderProduct);
             order.setLastUpdate(LocalDateTime.now());
         });
@@ -231,7 +231,7 @@ public class OrderService {
             throw new SagraQuantitaNonSufficiente(InvalidProduct.of(product.getId(), LOCKED));
         }
 
-        if ( ! productService.updateProductQuantity(product, -orderProductRequest.getQuantity()) ) {
+        if ( ! productService.updateProductQuantityForOrder(product, -orderProductRequest.getQuantity()) ) {
             throw new SagraQuantitaNonSufficiente(InvalidProduct.of(product.getId(), NOT_ENOUGH_QUANTITY));
         }
 

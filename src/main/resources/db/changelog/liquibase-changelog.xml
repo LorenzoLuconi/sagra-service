@@ -95,7 +95,10 @@
             <column name="product_id" type="bigint" >
                 <constraints referencedTableName="products" referencedColumnNames="id" foreignKeyName="fk_products_quantity" nullable="false" deleteCascade="true"/>
             </column>
-            <column name="quantity" type="integer">
+            <column name="initial_quantity" type="integer">
+                <constraints nullable="false"/>
+            </column>
+            <column name="available_quantity" type="integer">
                 <constraints nullable="false"/>
             </column>
         </createTable>

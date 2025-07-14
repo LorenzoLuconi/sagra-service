@@ -18,7 +18,8 @@ public interface MonitorMapper {
     MonitorView toViewResource(Monitor monitor);
 
     @Mapping(target = "name", source = "product.name")
-    @Mapping(target = "quantity", source = "product.productQuantity.quantity")
+    @Mapping(target = "initialQuantity", source = "product.productQuantity.initialQuantity")
+    @Mapping(target = "availableQuantity", source = "product.productQuantity.availableQuantity")
     MonitorProductView toViewResource(MonitorProduct monitorProduct);
 
 

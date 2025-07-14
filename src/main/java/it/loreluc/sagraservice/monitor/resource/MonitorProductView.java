@@ -5,5 +5,6 @@ import lombok.Data;
 @Data
 public class MonitorProductView {
     private String name;
-    private Integer quantity;
+    private Integer initialQuantity;
+    private Integer availableQuantity;
 }
