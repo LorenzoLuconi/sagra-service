@@ -172,6 +172,8 @@ public class OrderService {
             query.where(o.created.goe(startDate).and(o.created.lt(endDate)));
         }
 
+        query.orderBy(o.id.desc());
+
         query.offset(pageable.getOffset());
         query.limit(pageable.getPageSize());
 
