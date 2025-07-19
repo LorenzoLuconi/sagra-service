@@ -53,6 +53,8 @@ public class ProductService {
             query.where(p.course.id.eq(searchRequest.getCourseId()));
         }
 
+        query.orderBy(p.name.asc());
+
         return query.fetch();
     }
 
