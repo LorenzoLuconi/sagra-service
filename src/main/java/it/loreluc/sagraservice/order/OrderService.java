@@ -49,7 +49,7 @@ public class OrderService {
         validateOrderRequest(orderRequest);
         final Order order = orderMapper.toEntity(orderRequest);
         getDiscountRate(orderRequest).ifPresent(order::setDiscountRate);
-        order.setServiceCost(calculateServiceCost(orderRequest));
+        order.setServiceCost(settings.getServiceCost());
 
         // FIXME manca gestione dell'utente
         order.setUser(usersRepository.findById("lorenzo").orElseThrow(() -> new RuntimeException("User not found")));
@@ -85,8 +85,6 @@ public class OrderService {
 
         orderMapper.updateEntity(order, orderRequest);
         getDiscountRate(orderRequest).ifPresent(order::setDiscountRate);
-
-        order.setServiceCost(calculateServiceCost(orderRequest));
 
         final Map<Long, OrderProduct> orderedProductsMap = order.getProducts().stream()
                 .collect(Collectors.toMap(o -> o.getProduct().getId(), Function.identity()));
@@ -210,7 +208,7 @@ public class OrderService {
     private BigDecimal calculateTotalAmount(Order order) {
         final BigDecimal total = order.getProducts().stream().map(op -> op.getProduct().getPrice().multiply(new BigDecimal(op.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .add(order.getServiceCost());
+                .add(order.getServiceCost().multiply(new BigDecimal(order.getServiceNumber())));
 
         if ( order.getDiscountRate() != null ) {
             return total.subtract(total.multiply(order.getDiscountRate()).divide(ONE_HUNDRED, RoundingMode.HALF_DOWN).setScale(2, RoundingMode.HALF_DOWN));
