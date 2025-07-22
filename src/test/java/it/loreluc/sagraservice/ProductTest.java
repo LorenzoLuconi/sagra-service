@@ -396,8 +396,8 @@ public class ProductTest extends CommonTest {
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(9)))
-                .andExpect(jsonPath("$[0].id", is(1)))
-                .andExpect(jsonPath("$[1].id", is(2)))
+                .andExpect(jsonPath("$[0].id", is(9))) // Bottiglia 0.5
+                .andExpect(jsonPath("$[1].id", is(6))) // Bottiglia 1.5
         ;
     }
 
@@ -424,8 +424,8 @@ public class ProductTest extends CommonTest {
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].name", is("Grigliata Salsicce")))
-                .andExpect(jsonPath("$[1].name", is("Grigliata Rosticciana")))
+                .andExpect(jsonPath("$[0].name", is("Grigliata Rosticciana")))
+                .andExpect(jsonPath("$[1].name", is("Grigliata Salsicce")))
         ;
     }
 
