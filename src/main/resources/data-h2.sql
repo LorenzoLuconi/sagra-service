@@ -31,11 +31,11 @@ insert into products_quantity(product_id, initial_quantity, available_quantity) 
 (2, 500,500),
 (3, 75, 75),
 (4, 100, 100),
-(5, 30, 30),
+(5, 30, 9),
 (6, 1000, 1000),
 (7, 0,0 ),
 (8, 100, 100),
-(9, 1000, 1000)
+(9, 1000, 0)
 ;
 
 
