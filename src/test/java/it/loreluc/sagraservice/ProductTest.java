@@ -417,6 +417,18 @@ public class ProductTest extends CommonTest {
 
     @Test
     @DataSet( value = {"courses.yml","departments.yml","products.yml"}, cleanBefore = true)
+    public void product_search_exclude_linked() throws Exception {
+        this.mockMvc.perform(get("/v1/products?excludeLinked=true")
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(8)))
+        ;
+    }
+
+    @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml"}, cleanBefore = true)
     public void product_search_by_department() throws Exception {
         this.mockMvc.perform(get("/v1/products?departmentId=2")
                         .accept(MediaType.APPLICATION_JSON)

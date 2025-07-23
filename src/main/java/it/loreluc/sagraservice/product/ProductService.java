@@ -1,5 +1,6 @@
 package it.loreluc.sagraservice.product;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQuery;
 import it.loreluc.sagraservice.error.InvalidValue;
@@ -36,23 +37,30 @@ public class ProductService {
 
     public List<Product> search(ProductSearchRequest searchRequest) {
         final QProduct p = QProduct.product;
-        final JPAQuery<Product> query = new JPAQuery<Product>(entityManager)
-                .select(p)
-                .from(p);
+
+        final BooleanBuilder booleanBuilder = new BooleanBuilder();
 
         if ( searchRequest.getName() != null ) {
-            query.where(p.name.containsIgnoreCase(searchRequest.getName()));
+            booleanBuilder.and(p.name.containsIgnoreCase(searchRequest.getName()));
         }
 
         if ( searchRequest.getDepartmentId() != null ) {
-            query.where(p.department.id.eq(searchRequest.getDepartmentId()));
+            booleanBuilder.and(p.department.id.eq(searchRequest.getDepartmentId()));
         }
 
         if ( searchRequest.getCourseId() != null ) {
-            query.where(p.course.id.eq(searchRequest.getCourseId()));
+            booleanBuilder.and(p.course.id.eq(searchRequest.getCourseId()));
         }
 
-        query.orderBy(p.name.asc());
+        if ( searchRequest.isExcludeLinked() ) {
+            booleanBuilder.and(p.parentId.isNull());
+        }
+
+        final JPAQuery<Product> query = new JPAQuery<Product>(entityManager)
+                .select(p)
+                .from(p)
+                .where(booleanBuilder)
+                .orderBy(p.name.asc());
 
         return query.fetch();
     }
