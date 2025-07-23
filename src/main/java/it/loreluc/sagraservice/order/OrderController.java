@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.loreluc.sagraservice.error.ErrorResource;
+import it.loreluc.sagraservice.order.resource.CountResponse;
 import it.loreluc.sagraservice.order.resource.OrderRequest;
 import it.loreluc.sagraservice.order.resource.OrderResponse;
 import jakarta.validation.Valid;
@@ -48,13 +49,23 @@ public class OrderController {
     }
 
     @GetMapping
-    @Operation(summary = "Ricerca una ordine")
+    @Operation(summary = "Ricerca degli ordini")
     @ApiResponse(responseCode = "200")
     @ApiResponse(responseCode = "400", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Richiesta non valida")
     @ApiResponse(responseCode = "401", content = @Content)
     @ApiResponse(responseCode = "403", content = @Content)
     public List<OrderResponse> ordersSearch(SearchOrderRequest searchOrderRequest, @ParameterObject Pageable pageable) {
         return orderService.searchOrders(searchOrderRequest, pageable).stream().map(orderMapper::toResponse).toList();
+    }
+
+    @GetMapping("/count")
+    @Operation(summary = "Contare gli ordini")
+    @ApiResponse(responseCode = "200")
+    @ApiResponse(responseCode = "400", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Richiesta non valida")
+    @ApiResponse(responseCode = "401", content = @Content)
+    @ApiResponse(responseCode = "403", content = @Content)
+    public CountResponse ordersCount(SearchOrderRequest searchOrderRequest) {
+        return new CountResponse(orderService.countOrders(searchOrderRequest));
     }
 
     @DeleteMapping("/{orderId}")

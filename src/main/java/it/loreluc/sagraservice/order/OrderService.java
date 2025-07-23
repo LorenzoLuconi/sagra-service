@@ -1,5 +1,8 @@
 package it.loreluc.sagraservice.order;
 
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQuery;
 import it.loreluc.sagraservice.config.SagraSettings;
 import it.loreluc.sagraservice.discount.DiscountService;
@@ -150,32 +153,50 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    public List<Order> searchOrders(SearchOrderRequest searchOrderRequest, Pageable pageable) {
+    private Predicate createSearchCriteria(SearchOrderRequest searchOrderRequest) {
+        final BooleanBuilder booleanBuilder = new BooleanBuilder();
         final QOrder o = QOrder.order;
-        final JPAQuery<Order> query = new JPAQuery<Order>(entityManager)
-                .select(o)
-                .from(o);
 
         if ( searchOrderRequest.getCustomer() != null && ! searchOrderRequest.getCustomer().isEmpty()) {
-            query.where(o.customer.containsIgnoreCase(searchOrderRequest.getCustomer()));
+            booleanBuilder.and(o.customer.containsIgnoreCase(searchOrderRequest.getCustomer()));
         }
 
         if ( searchOrderRequest.getUsername() != null && ! searchOrderRequest.getUsername().isEmpty()) {
-            query.where(o.user.username.eq(searchOrderRequest.getUsername()));
+            booleanBuilder.and(o.user.username.eq(searchOrderRequest.getUsername()));
         }
 
         if ( searchOrderRequest.getCreated() != null ) {
             final LocalDateTime startDate = searchOrderRequest.getCreated().atStartOfDay();
             final LocalDateTime endDate = searchOrderRequest.getCreated().plusDays(1).atStartOfDay();
-            query.where(o.created.goe(startDate).and(o.created.lt(endDate)));
+            booleanBuilder.and(o.created.goe(startDate).and(o.created.lt(endDate)));
         }
 
-        query.orderBy(o.id.desc());
 
-        query.offset(pageable.getOffset());
-        query.limit(pageable.getPageSize());
+        return booleanBuilder;
+    }
+
+    public List<Order> searchOrders(SearchOrderRequest searchOrderRequest, Pageable pageable) {
+        final QOrder o = QOrder.order;
+        final JPAQuery<Order> query = new JPAQuery<Order>(entityManager)
+                .select(o)
+                .from(o)
+                .where(createSearchCriteria(searchOrderRequest))
+                .orderBy(o.id.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                ;
 
         return query.fetch();
+    }
+
+    public Long countOrders(SearchOrderRequest searchOrderRequest) {
+        final QOrder o = QOrder.order;
+        return new JPAQuery<Order>(entityManager)
+                .select(Wildcard.count)
+                .from(o)
+                .where(createSearchCriteria(searchOrderRequest))
+                .fetchOne()
+                ;
     }
 
     private void validateOrderRequest(OrderRequest orderRequest) {

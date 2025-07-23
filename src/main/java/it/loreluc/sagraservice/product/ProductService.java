@@ -8,7 +8,6 @@ import it.loreluc.sagraservice.error.SagraConflictException;
 import it.loreluc.sagraservice.error.SagraNotFoundException;
 import it.loreluc.sagraservice.jpa.*;
 import it.loreluc.sagraservice.product.resource.ProductMapper;
-import it.loreluc.sagraservice.product.resource.ProductQuantityInitRequest;
 import it.loreluc.sagraservice.product.resource.ProductRequest;
 import it.loreluc.sagraservice.product.resource.ProductResponse;
 import jakarta.persistence.EntityManager;
@@ -119,8 +118,8 @@ public class ProductService {
         return updated == 1;
     }
 
-    @Transactional(rollbackFor = Throwable.class)
-    public void initProductsQuantity(List<ProductQuantityInitRequest> productQuantityInitRequests) {
+
+    private void checkOrdersForQuantityInit() {
         final LocalDateTime startDate = LocalDate.now().atStartOfDay();
         final LocalDateTime endDate = LocalDate.now().plusDays(1).atStartOfDay();
 
@@ -135,24 +134,22 @@ public class ProductService {
         if ( count != null && count > 0 ) {
             throw new SagraConflictException(String.format("Sono già presenti %s ordini in data odierna, inizializzazione non possibile", count));
         }
+    }
 
-        productQuantityInitRequests.forEach(pq -> {
-            final Product product;
-            try {
-                product = findById(pq.getProductId());
-            } catch ( SagraNotFoundException e) {
-                throw new SagraBadRequestException(String.format("Prodotto con id %s non trovato", pq.getProductId()));
-            }
+    @Transactional(rollbackFor = Throwable.class)
+    public void initProductQuantity(Long productId, Integer quantityInitialization) {
 
-            final ProductQuantity productQuantity = product.getProductQuantity();
+        final Product product = findById(productId);
+        checkOrdersForQuantityInit();
 
-            if ( product.getParentId() != null ) {
-                throw new SagraBadRequestException(String.format("Il prodotto con id %s, è collegato ad un altro prodotto e non può essere inizializzato", product.getId()));
-            }
+        final ProductQuantity productQuantity = product.getProductQuantity();
 
-            productQuantity.setInitialQuantity(pq.getInitialQuantity());
-            productQuantity.setAvailableQuantity(pq.getInitialQuantity());
-        });
+        if ( product.getParentId() != null ) {
+            throw new SagraBadRequestException(String.format("Il prodotto con id %s, è collegato ad un altro prodotto e non può essere inizializzato", product.getId()));
+        }
+
+        productQuantity.setInitialQuantity(quantityInitialization);
+        productQuantity.setAvailableQuantity(quantityInitialization);
     }
 
     @Transactional(rollbackFor = Throwable.class, propagation = Propagation.MANDATORY)

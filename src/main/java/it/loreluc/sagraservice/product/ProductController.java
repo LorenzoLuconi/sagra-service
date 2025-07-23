@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import it.loreluc.sagraservice.error.ErrorResource;
 import it.loreluc.sagraservice.error.InvalidProduct;
 import it.loreluc.sagraservice.error.SagraQuantitaNonSufficiente;
-import it.loreluc.sagraservice.product.resource.ProductQuantityInitRequest;
 import it.loreluc.sagraservice.product.resource.ProductQuantityRequest;
 import it.loreluc.sagraservice.product.resource.ProductRequest;
 import it.loreluc.sagraservice.product.resource.ProductResponse;
@@ -18,7 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static it.loreluc.sagraservice.error.InvalidProduct.ProductError.NOT_ENOUGH_QUANTITY;
@@ -130,10 +128,10 @@ public class ProductController {
        productService.delete(productId);
     }
 
-    @PutMapping("/initQuantity")
-    @Operation(summary = "Modifica la quantità iniziale dei prodotti",
+    @PutMapping("/{productId}/initQuantity")
+    @Operation(summary = "Modifica la quantità iniziale di un prodotto",
             description = """
-                          Modifica la quantità iniziale dei prodotti (inizializzazione giornaliera), impostando il valore passato che deve essere >= 0.
+                          Modifica la quantità iniziale del prodotto (inizializzazione giornaliera), impostando il valore passato che deve essere >= 0.
                           Viene sovrascritta la quantità disponibile e quella iniziale.
                           
                           Se ci sono degli ordini già effettuati in data odierna non è possibile effettuare l'inizializzazione (409)
@@ -144,9 +142,9 @@ public class ProductController {
     @ApiResponse(responseCode = "401", content = @Content)
     @ApiResponse(responseCode = "403", content = @Content)
     @ApiResponse(responseCode = "409", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Sono presenti degli ordini in data odierna")
-    public Map<String, String> productInitQuantity(@RequestBody @Valid List<@Valid ProductQuantityInitRequest> productQuantityInitRequests) throws SagraQuantitaNonSufficiente {
-        productService.initProductsQuantity(productQuantityInitRequests);
-        return Map.of("message", "Quantità prodotti inizializzata");
+    public ProductResponse productInitQuantity(@PathVariable Long productId, @RequestBody @Valid ProductQuantityRequest productQuantityRequest) {
+        productService.initProductQuantity(productId, productQuantityRequest.getQuantityVariation());
+        return productService.toResource(productService.findById(productId));
     }
 
 
