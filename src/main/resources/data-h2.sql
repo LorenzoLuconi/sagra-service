@@ -40,7 +40,10 @@ insert into products (id, name, note, department_id, course_id, price, created, 
 (25, 'Bevanda in lattina', null, 4, 4, 2, now(), now(), null, false),
 (26, 'Estathè in brick', null, 4, 4, 1, now(), now(), null, false),
 (27, 'Acqua frizzante/naturale 1.5L', null, 4, 4, 2, now(), now(), null, false),
-(28, 'Acqua frizzante/naturale 0.5L', null, 4, 4, 1, now(), now(), null, false)
+(28, 'Acqua frizzante/naturale 0.5L', null, 4, 4, 1, now(), now(), null, false),
+(29, 'Test prodotto bloccato', null, 4, 4, 1, now(), now(), null, true),
+(30, 'Test prodotto terminato', null, 4, 4, 1, now(), now(), null, false),
+(31, 'Test prodotto quasi terminato', null, 4, 4, 1, now(), now(), null, false)
 ;
 
 
@@ -72,7 +75,10 @@ insert into products_quantity(product_id, initial_quantity, available_quantity) 
 (25, 100, 99),
 (26, 30, 30),
 (27, 1000, 998),
-(28, 1000, 1000)
+(28, 1000, 1000),
+(29, 100, 100),
+(30, 100, 0),
+(31, 80, 9)
 ;
 
 
