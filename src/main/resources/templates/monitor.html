@@ -2,7 +2,7 @@
 <html lang="it" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" th:attr="content=${refresh}">
+    <meta th:if="${refresh > 0}" http-equiv="refresh" th:attr="content=${refresh}">
     <title th:text="|Monitor ${monitor.name}|"></title>
 </head>
 <style>
@@ -64,6 +64,14 @@
         padding: 18px 5px 18px 10px;
     }
 
+    .quasi-terminato{
+        background-color: #FFE5C9;
+    }
+
+    .terminato {
+        background-color: #F7CDC6;
+    }
+
     table {
         width: 100%;
         border-collapse: collapse;
@@ -84,7 +92,8 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="product,iter:${monitor.products}" th:class="${iter.odd}? 'odd' : 'even'">
+            <tr th:each="product,iter:${monitor.products}"
+                th:class="${product.availableQuantity == 0}?'terminato':(${product.availableQuantity < 10}?'quasi-terminato':(${iter.odd}?'odd':'even'))">
                 <td class="left" th:text="${product.name}"></td>
                 <td class="right" th:text="|${product.availableQuantity}/${product.initialQuantity}|"></td>
             </tr>
