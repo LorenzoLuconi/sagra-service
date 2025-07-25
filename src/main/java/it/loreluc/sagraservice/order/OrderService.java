@@ -11,8 +11,8 @@ import it.loreluc.sagraservice.error.*;
 import it.loreluc.sagraservice.jpa.*;
 import it.loreluc.sagraservice.order.resource.OrderProductRequest;
 import it.loreluc.sagraservice.order.resource.OrderRequest;
-import it.loreluc.sagraservice.order.resource.OrderStatResult;
-import it.loreluc.sagraservice.order.resource.OrderedProductsStats;
+import it.loreluc.sagraservice.order.resource.StatOrder;
+import it.loreluc.sagraservice.order.resource.StatOrderProduct;
 import it.loreluc.sagraservice.product.ProductService;
 import it.loreluc.sagraservice.security.UsersRepository;
 import jakarta.persistence.EntityManager;
@@ -289,8 +289,10 @@ public class OrderService {
         return Optional.empty();
     }
 
-    public List<OrderStatResult> ordersStats() {
+    public Map<LocalDate, StatOrder> ordersStats(LocalDate date) {
         final QOrder o = QOrder.order;
+
+
 
         final JPAQuery<Tuple> query = new JPAQuery<>(entityManager)
                 .select(o.created.year(), o.created.month(), o.created.dayOfMonth(),
@@ -299,48 +301,53 @@ public class OrderService {
                 .orderBy(o.created.year().asc(), o.created.month().asc(), o.created.dayOfMonth().asc())
                 .groupBy(o.created.year(), o.created.month(), o.created.dayOfMonth());
 
-        return query.fetch().stream().map(t -> {
-            final OrderStatResult result = new OrderStatResult();
-            final Integer year = t.get(o.created.year());
-            final Integer month = t.get(o.created.month());
-            final Integer day = t.get(o.created.dayOfMonth());
-            if ( year != null && month != null && day != null)
-                result.setDate(LocalDate.of(year, month, day));
+        if ( date != null ) {
+            final LocalDateTime startDate = date.atStartOfDay();
+            final LocalDateTime endDate = date.plusDays(1).atStartOfDay();
+            query.where((o.created.goe(startDate).and(o.created.lt(endDate))));
+        }
+
+        final HashMap<LocalDate, StatOrder> prodMap = new LinkedHashMap<>();
+        query.fetch().forEach(t -> {
+            final StatOrder result = new StatOrder();
             result.setTotalAmount(t.get(o.totalAmount.sumBigDecimal()));
             result.setCount(t.get(Wildcard.count));
-            result.setServiceNumber(t.get(o.serviceNumber.sumLong()));
-            return result;
-        }).toList();
+            result.setTotalServiceNumber(t.get(o.serviceNumber.sumLong()));
+            final LocalDate localDate = createLocalDate(t);
+            result.setProducts(orderedProductsStats(localDate));
 
+            prodMap.putIfAbsent(localDate, result);
+        });
+
+        return prodMap;
     }
 
-    public HashMap<LocalDate, List<OrderedProductsStats>> orderedProductsStats() {
+    public List<StatOrderProduct> orderedProductsStats(LocalDate date) {
         final QOrder o = QOrder.order;
         final QOrderProduct op = QOrderProduct.orderProduct;
+
+        final LocalDateTime startDate = date.atStartOfDay();
+        final LocalDateTime endDate = date.plusDays(1).atStartOfDay();
+
 
         final JPAQuery<Tuple> query = new JPAQuery<>(entityManager)
                 .select(o.created.year(), o.created.month(), o.created.dayOfMonth(),
                         op.product.id, op.price.sumBigDecimal(), Wildcard.count)
                 .from(op)
                 .join(op.order, o)
+                .where((o.created.goe(startDate).and(o.created.lt(endDate))))
                 .orderBy(o.created.year().asc(), o.created.month().asc(), o.created.dayOfMonth().asc(), Wildcard.count.desc())
                 .groupBy(o.created.year(), o.created.month(), o.created.dayOfMonth(), op.product.id);
 
-        final HashMap<LocalDate, List<OrderedProductsStats>> prodMap = new LinkedHashMap<>();
-        query.fetch().forEach(t -> {
-            final OrderedProductsStats result = new OrderedProductsStats();
+        return query.fetch().stream().map(t -> {
+            final StatOrderProduct result = new StatOrderProduct();
             result.setTotalAmount(t.get(op.price.sumBigDecimal()));
             result.setCount(t.get(Wildcard.count));
             result.setProductId(t.get(op.product.id));
+            return result;
 
-            final LocalDate localDate = createLocalDate(t);
-            if ( ! prodMap.containsKey(localDate) ) {
-                prodMap.put(localDate, new ArrayList<>());
-            }
-            prodMap.get(localDate).add(result);
-        });
+        }).toList();
         
-        return prodMap;
     }
 
     private LocalDate createLocalDate(Tuple t) {

@@ -5,14 +5,15 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 
+@Schema(name = "StatsOrderedProducts")
 @Data
-public class OrderedProductsStats {
+public class StatOrderProduct {
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
     private Long productId;
 
-    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Totale importo prodotto venduto")
     private BigDecimal totalAmount;
 
-    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Quantità venduta del prodotto")
     private Long count;
 }
