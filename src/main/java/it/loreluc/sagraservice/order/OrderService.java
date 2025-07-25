@@ -1,6 +1,7 @@
 package it.loreluc.sagraservice.order;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -10,6 +11,8 @@ import it.loreluc.sagraservice.error.*;
 import it.loreluc.sagraservice.jpa.*;
 import it.loreluc.sagraservice.order.resource.OrderProductRequest;
 import it.loreluc.sagraservice.order.resource.OrderRequest;
+import it.loreluc.sagraservice.order.resource.OrderStatResult;
+import it.loreluc.sagraservice.order.resource.OrderedProductsStats;
 import it.loreluc.sagraservice.product.ProductService;
 import it.loreluc.sagraservice.security.UsersRepository;
 import jakarta.persistence.EntityManager;
@@ -21,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
@@ -283,5 +287,71 @@ public class OrderService {
         }
 
         return Optional.empty();
+    }
+
+    public List<OrderStatResult> ordersStats() {
+        final QOrder o = QOrder.order;
+
+        final JPAQuery<Tuple> query = new JPAQuery<>(entityManager)
+                .select(o.created.year(), o.created.month(), o.created.dayOfMonth(),
+                        o.totalAmount.sumBigDecimal(), o.serviceNumber.sumLong(), Wildcard.count)
+                .from(o)
+                .orderBy(o.created.year().asc(), o.created.month().asc(), o.created.dayOfMonth().asc())
+                .groupBy(o.created.year(), o.created.month(), o.created.dayOfMonth());
+
+        return query.fetch().stream().map(t -> {
+            final OrderStatResult result = new OrderStatResult();
+            final Integer year = t.get(o.created.year());
+            final Integer month = t.get(o.created.month());
+            final Integer day = t.get(o.created.dayOfMonth());
+            if ( year != null && month != null && day != null)
+                result.setDate(LocalDate.of(year, month, day));
+            result.setTotalAmount(t.get(o.totalAmount.sumBigDecimal()));
+            result.setCount(t.get(Wildcard.count));
+            result.setServiceNumber(t.get(o.serviceNumber.sumLong()));
+            return result;
+        }).toList();
+
+    }
+
+    public HashMap<LocalDate, List<OrderedProductsStats>> orderedProductsStats() {
+        final QOrder o = QOrder.order;
+        final QOrderProduct op = QOrderProduct.orderProduct;
+
+        final JPAQuery<Tuple> query = new JPAQuery<>(entityManager)
+                .select(o.created.year(), o.created.month(), o.created.dayOfMonth(),
+                        op.product.id, op.price.sumBigDecimal(), Wildcard.count)
+                .from(op)
+                .join(op.order, o)
+                .orderBy(o.created.year().asc(), o.created.month().asc(), o.created.dayOfMonth().asc(), Wildcard.count.desc())
+                .groupBy(o.created.year(), o.created.month(), o.created.dayOfMonth(), op.product.id);
+
+        final HashMap<LocalDate, List<OrderedProductsStats>> prodMap = new LinkedHashMap<>();
+        query.fetch().forEach(t -> {
+            final OrderedProductsStats result = new OrderedProductsStats();
+            result.setTotalAmount(t.get(op.price.sumBigDecimal()));
+            result.setCount(t.get(Wildcard.count));
+            result.setProductId(t.get(op.product.id));
+
+            final LocalDate localDate = createLocalDate(t);
+            if ( ! prodMap.containsKey(localDate) ) {
+                prodMap.put(localDate, new ArrayList<>());
+            }
+            prodMap.get(localDate).add(result);
+        });
+        
+        return prodMap;
+    }
+
+    private LocalDate createLocalDate(Tuple t) {
+        final QOrder o = QOrder.order;
+        final Integer year = t.get(o.created.year());
+        final Integer month = t.get(o.created.month());
+        final Integer day = t.get(o.created.dayOfMonth());
+
+        if ( year == null || month == null && day == null)
+            throw new RuntimeException("Anno, mese o giorno non può essere nulla nell'aggregazione");
+
+        return LocalDate.of(year, month, day);
     }
 }
