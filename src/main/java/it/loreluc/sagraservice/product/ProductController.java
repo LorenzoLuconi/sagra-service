@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.loreluc.sagraservice.error.ErrorResource;
+import it.loreluc.sagraservice.error.ErrorResourceNotEnoughQuantity;
 import it.loreluc.sagraservice.error.InvalidProduct;
 import it.loreluc.sagraservice.error.SagraQuantitaNonSufficiente;
 import it.loreluc.sagraservice.product.resource.ProductQuantityRequest;
@@ -107,7 +108,7 @@ public class ProductController {
     @ApiResponse(responseCode = "401", content = @Content)
     @ApiResponse(responseCode = "403", content = @Content)
     @ApiResponse(responseCode = "404", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Prodotto non trovata")
-    @ApiResponse(responseCode = "450", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Quantità prodotto insufficiente per la variazione richiesta")
+    @ApiResponse(responseCode = "450", content = @Content(schema = @Schema(implementation = ErrorResourceNotEnoughQuantity.class)), description = "Quantità prodotto insufficiente per la variazione richiesta")
     public ProductResponse productUpdateQuantity(@PathVariable Long productId, @RequestBody @Valid ProductQuantityRequest productQuantityRequest) throws SagraQuantitaNonSufficiente {
         if ( productService.updateProductQuantityAvailability(productId, productQuantityRequest.getQuantityVariation())) {
             return productService.toResource(productService.findById(productId));

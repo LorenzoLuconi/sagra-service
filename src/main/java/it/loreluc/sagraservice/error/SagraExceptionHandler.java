@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -54,13 +53,12 @@ public class SagraExceptionHandler {
     }
 
     @ExceptionHandler(SagraQuantitaNonSufficiente.class)
-    public ResponseEntity<Map<String, Object>> handler(SagraQuantitaNonSufficiente e) {
-        return ResponseEntity.status(450).body(
-                Map.of(
-                        "message", "Alcuni prodotti non sono vendibili o non hanno quantità sufficiente",
-                        "invalidProducts", e.getInvalidProducts()
-                )
-        );
+    public ResponseEntity<ErrorResourceNotEnoughQuantity> handler(SagraQuantitaNonSufficiente e) {
+        return ResponseEntity.status(450)
+                .body(ErrorResourceNotEnoughQuantity.createError(
+                "Alcuni prodotti non sono vendibili o non hanno quantità sufficiente",
+                        e.getInvalidProducts()
+                ));
     }
 
 

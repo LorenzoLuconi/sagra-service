@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.loreluc.sagraservice.error.ErrorResource;
+import it.loreluc.sagraservice.error.ErrorResourceNotEnoughQuantity;
 import it.loreluc.sagraservice.order.resource.CountResponse;
 import it.loreluc.sagraservice.order.resource.OrderRequest;
 import it.loreluc.sagraservice.order.resource.OrderResponse;
@@ -43,7 +44,7 @@ public class OrderController {
     @ApiResponse(responseCode = "201")
     @ApiResponse(responseCode = "401", content = @Content)
     @ApiResponse(responseCode = "403", content = @Content)
-    @ApiResponse(responseCode = "450", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Alcuni prodotti sono bloccati alla vendita o quantità insufficiente")
+    @ApiResponse(responseCode = "450", content = @Content(schema = @Schema(implementation = ErrorResourceNotEnoughQuantity.class)), description = "Alcuni prodotti sono bloccati alla vendita o quantità insufficiente")
     public OrderResponse orderCreate(@RequestBody @Valid OrderRequest orderRequest) {
         return orderMapper.toResponse(orderService.createOrder(orderRequest));
     }
@@ -84,7 +85,7 @@ public class OrderController {
     @ApiResponse(responseCode = "401", content = @Content)
     @ApiResponse(responseCode = "403", content = @Content)
     @ApiResponse(responseCode = "404", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Ordine non trovato")
-    @ApiResponse(responseCode = "450", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Alcuni prodotti sono bloccati alla vendita o quantità insufficiente")
+    @ApiResponse(responseCode = "450", content = @Content(schema = @Schema(implementation = ErrorResourceNotEnoughQuantity.class)), description = "Alcuni prodotti sono bloccati alla vendita o quantità insufficiente")
     public OrderResponse orderUpdate(@PathVariable Long orderId, @RequestBody @Valid OrderRequest orderRequest) {
         return orderMapper.toResponse(orderService.updateOrder(orderId, orderRequest));
     }
