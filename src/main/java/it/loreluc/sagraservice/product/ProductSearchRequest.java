@@ -10,6 +10,7 @@ public class ProductSearchRequest {
 
     private Long courseId;
     private Long departmentId;
+    private boolean excludeLinked;
 
     @Schema(description = "Ricerca con operatore 'contains'")
     private String name;

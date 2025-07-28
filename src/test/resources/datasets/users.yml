@@ -1,0 +1,11 @@
+users:
+  - username: lorenzo
+    password: '$2a$10$CQViJR5.yIcVJzfeGPMRMeeb9aZbUOCga.MJhbKVaq1ooxIdrF4mm'
+    role: admin
+    created: "[now]"
+    last_update: "[now]"
+  - username: test
+    password: '$2a$10$CQViJR5.yIcVJzfeGPMRMeeb9aZbUOCga.MJhbKVaq1ooxIdrF4mm'
+    role: user
+    created: "[now]"
+    last_update: "[now]"

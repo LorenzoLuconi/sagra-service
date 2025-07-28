@@ -9,10 +9,13 @@ import java.math.BigDecimal;
 @Schema(name = "OrderedProduct")
 public class OrderProductResponse {
 
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
     private Long productId;
 
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
     private Integer quantity;
 
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
     private BigDecimal price;
 
     private String note;

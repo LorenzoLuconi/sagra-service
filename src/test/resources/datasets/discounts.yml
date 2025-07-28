@@ -1,0 +1,7 @@
+discounts:
+  - id: 1
+    name: 'Sconto 20% amici'
+    rate: 20.0
+  - id: 2
+    name: 'Sconto 100% amici speciali'
+    rate: 100.0

@@ -1,15 +1,15 @@
 package it.loreluc.sagraservice.product.resource;
 
-import it.loreluc.sagraservice.course.CourseService;
-import it.loreluc.sagraservice.department.DepartmentService;
 import it.loreluc.sagraservice.jpa.Product;
+import it.loreluc.sagraservice.product.ProductEntityResolver;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
-@Mapper(componentModel = "spring", uses = {CourseService.class, DepartmentService.class})
+@Mapper(componentModel = "spring", uses = {ProductEntityResolver.class})
 public interface ProductMapper {
-    @Mapping(target = "quantity", ignore = true)
+    @Mapping(target = "initialQuantity", ignore = true)
+    @Mapping(target = "availableQuantity", ignore = true)
     @Mapping(target = "courseId", source = "course.id")
     @Mapping(target = "departmentId", source = "department.id")
     ProductResponse toResource(Product product);

@@ -11,7 +11,7 @@ import lombok.ToString;
 @Table(name = "monitors_products")
 @Getter
 @Setter
-@ToString
+@ToString(of = {"id", "idx"})
 public class MonitorProduct {
 
     @EmbeddedId
@@ -30,5 +30,5 @@ public class MonitorProduct {
     private Product product;
 
     @NotNull @Min(0)
-    private Short priority;
+    private Short idx;
 }

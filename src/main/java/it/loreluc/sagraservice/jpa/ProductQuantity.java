@@ -23,6 +23,10 @@ public class ProductQuantity {
     @JoinColumn(name = "product_id")
     private Product product;
 
-    private Integer quantity;
+    @NotNull
+    private Integer initialQuantity;
+
+    @NotNull
+    private Integer availableQuantity;
 
 }
