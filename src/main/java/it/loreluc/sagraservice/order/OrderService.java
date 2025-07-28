@@ -1,5 +1,9 @@
 package it.loreluc.sagraservice.order;
 
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQuery;
 import it.loreluc.sagraservice.config.SagraSettings;
 import it.loreluc.sagraservice.discount.DiscountService;
@@ -7,6 +11,8 @@ import it.loreluc.sagraservice.error.*;
 import it.loreluc.sagraservice.jpa.*;
 import it.loreluc.sagraservice.order.resource.OrderProductRequest;
 import it.loreluc.sagraservice.order.resource.OrderRequest;
+import it.loreluc.sagraservice.order.resource.StatOrder;
+import it.loreluc.sagraservice.order.resource.StatOrderProduct;
 import it.loreluc.sagraservice.product.ProductService;
 import it.loreluc.sagraservice.security.UsersRepository;
 import jakarta.persistence.EntityManager;
@@ -18,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
@@ -36,7 +43,7 @@ public class OrderService {
     private final ProductService productService;
     private final SagraSettings settings;
     private final UsersRepository usersRepository;
-    private final EntityManager em;
+    private final EntityManager entityManager;
     private final DiscountService discountService;
 
     public Order getOrderById(Long orderId) {
@@ -44,18 +51,21 @@ public class OrderService {
     }
 
     @Transactional(rollbackFor = Throwable.class)
-    public Order
-    createOrder(OrderRequest orderRequest) {
+    public Order createOrder(OrderRequest orderRequest) {
 
         validateOrderRequest(orderRequest);
         final Order order = orderMapper.toEntity(orderRequest);
         getDiscountRate(orderRequest).ifPresent(order::setDiscountRate);
-        updateService(order, orderRequest);
+        order.setServiceCost(settings.getServiceCost());
 
         // FIXME manca gestione dell'utente
         order.setUser(usersRepository.findById("lorenzo").orElseThrow(() -> new RuntimeException("User not found")));
 
-        orderRequest.getProducts().forEach(orderProductRequest -> addProductToOrder(order, orderProductRequest));
+        int idx = 0;
+        for (OrderProductRequest orderProductRequest : orderRequest.getProducts()) {
+            addProductToOrder(order, orderProductRequest, idx++);
+        }
+
         order.setTotalAmount(calculateTotalAmount(order));
 
         return orderRepository.save(order);
@@ -66,7 +76,7 @@ public class OrderService {
         final Order order = getOrderById(orderId);
 
         order.getProducts().forEach(op -> {
-            if ( ! productService.updateProductQuantity(op.getProduct(), op.getQuantity()) ) {
+            if ( ! productService.updateProductQuantityForOrder(op.getProduct(), op.getQuantity()) ) {
                 log.error("Nella cancellazione di un ordine non dovrebbe mai esserci un errore durante la restituzione della quantità: {}, {}", order, op);
                 throw new RuntimeException("Si è verificato un errore inatteso nella cancellazione dell'ordine: " + orderId);
             }
@@ -80,22 +90,21 @@ public class OrderService {
         final Order order = getOrderById(orderId);
         validateOrderRequest(orderRequest);
 
-        order.setCustomer(orderRequest.getCustomer());
-        order.setNote(orderRequest.getNote());
-        order.setTakeAway(orderRequest.isTakeAway());
+        orderMapper.updateEntity(order, orderRequest);
         getDiscountRate(orderRequest).ifPresent(order::setDiscountRate);
 
-        updateService(order, orderRequest);
+        final Map<Long, OrderProduct> orderedProductsMap = order.getProducts().stream()
+                .collect(Collectors.toMap(o -> o.getProduct().getId(), Function.identity()));
 
-        final Map<Long, OrderProduct> orderedProductsMap = order.getProducts().stream().collect(Collectors.toMap(OrderProduct::getId, Function.identity()));
-
-        for (final OrderProductRequest orderProductRequest : orderRequest.getProducts()) {
+        for (int i = 0; i < orderRequest.getProducts().size(); i++) {
+            final OrderProductRequest orderProductRequest = orderRequest.getProducts().get(i);
             final OrderProduct orderProduct = orderedProductsMap.get(orderProductRequest.getProductId());
 
             // Nuovo prodotto da aggiungere
             if ( orderProduct == null ) {
                 log.debug("Prodotto da aggiungere all'ordine: orderId={}, {}", orderId, orderProductRequest);
-                addProductToOrder(order, orderProductRequest);
+                addProductToOrder(order, orderProductRequest, i);
+                order.setLastUpdate(LocalDateTime.now());
                 continue;
             }
 
@@ -105,65 +114,93 @@ public class OrderService {
                 final Product product = orderProduct.getProduct();
                 log.debug("Quantità modificata per prodotto in ordine: orderId={}, productId={}, quantita orig {} - nuova quantita {} = {}", orderId, orderProduct.getProduct().getId(), orderProduct.getQuantity(), orderProductRequest.getQuantity(), diff);
 
-                if ( ! productService.updateProductQuantity(product, diff) ) {
+                if ( ! productService.updateProductQuantityForOrder(product, diff) ) {
                     throw new SagraQuantitaNonSufficiente(InvalidProduct.of(product.getId(), NOT_ENOUGH_QUANTITY));
                 }
+                orderProduct.setQuantity(orderProductRequest.getQuantity());
+                order.setLastUpdate(LocalDateTime.now());
             }
+
+            orderProduct.setIdx(i);
         }
 
         final Set<Long> newOrderedProductsSet = orderRequest.getProducts().stream().map(OrderProductRequest::getProductId).collect(Collectors.toSet());
-        final List<Integer> idxToRemove = new ArrayList<>();
-        // Individuiamo i prodotti da rimuovere dall'ordine
-        for ( int idx = 0; idx < order.getProducts().size(); ++idx ) {
-            final OrderProduct orderProduct = order.getProducts().get(idx);
+        final List<OrderProduct> productsToRemove = new ArrayList<>();
 
+        // Individuiamo i prodotti da rimuovere
+        order.getProducts().forEach(orderProduct -> {
             if ( ! newOrderedProductsSet.contains(orderProduct.getProduct().getId()) ) {
-                log.debug("Modifica ordine, individuato prodotto da rimuovere: ordineId={}, {}", orderId, idx);
-                idxToRemove.add(idx);
+                productsToRemove.add(orderProduct);
             }
-        }
+        });
 
         // Rimuoviamo i prodotti dall'ordine
-        idxToRemove.forEach(index -> {
-            final OrderProduct removed = order.getProducts().remove(index.intValue());
-            if ( removed == null ) {
-                log.error("Il prodotto ordinato individuato per l'eliminzaione non è stato trovato: orderId={}, index prodotto da rimuovere={}", order.getId(), index);
+        productsToRemove.forEach(orderProduct -> {
+            if ( ! order.getProducts().remove(orderProduct) ) {
+                log.error("Il prodotto ordinato individuato per l'eliminazione non è stato trovato: orderId={}, prodotto da rimuovere={}", order.getId(), orderProduct);
                 throw new RuntimeException("Errore durante la modifica di un ordine per rimozione di un prodotto ordinato");
             }
 
-            log.debug("Modifica ordine rimozione prodotto: ordineId={}, index={}, removed={}", orderId, index, removed);
-            productService.updateProductQuantity(removed.getProduct(), removed.getQuantity());
+            log.debug("Modifica ordine rimozione prodotto: ordineId={}, removed={}", orderId, orderProduct);
+            productService.updateProductQuantityForOrder(orderProduct.getProduct(), orderProduct.getQuantity());
+            entityManager.remove(orderProduct);
+            order.setLastUpdate(LocalDateTime.now());
         });
 
         order.setTotalAmount(calculateTotalAmount(order));
 
+        if ( order.getProducts().size() != orderRequest.getProducts().size() ) {
+            log.error("Dopo l'aggiornamento dell'ordine il numero di elementi tra ordine e orderRequest non corrisponde: {}, {}", orderRequest, order);
+            throw new RuntimeException("Non corrispondenza tra numero prodotti ordinati e richiesta aggiornamento ordine");
+        }
+
         return orderRepository.save(order);
     }
 
-    public List<Order> searchOrders(SearchOrderRequest searchOrderRequest, Pageable pageable) {
+    private Predicate createSearchCriteria(SearchOrderRequest searchOrderRequest) {
+        final BooleanBuilder booleanBuilder = new BooleanBuilder();
         final QOrder o = QOrder.order;
-        final JPAQuery<Order> query = new JPAQuery<Order>(em)
-                .select(o)
-                .from(o);
 
         if ( searchOrderRequest.getCustomer() != null && ! searchOrderRequest.getCustomer().isEmpty()) {
-            query.where(o.customer.containsIgnoreCase(searchOrderRequest.getCustomer()));
+            booleanBuilder.and(o.customer.containsIgnoreCase(searchOrderRequest.getCustomer()));
         }
 
         if ( searchOrderRequest.getUsername() != null && ! searchOrderRequest.getUsername().isEmpty()) {
-            query.where(o.user.username.eq(searchOrderRequest.getUsername()));
+            booleanBuilder.and(o.user.username.eq(searchOrderRequest.getUsername()));
         }
 
         if ( searchOrderRequest.getCreated() != null ) {
             final LocalDateTime startDate = searchOrderRequest.getCreated().atStartOfDay();
             final LocalDateTime endDate = searchOrderRequest.getCreated().plusDays(1).atStartOfDay();
-            query.where(o.created.goe(startDate).and(o.created.lt(endDate)));
+            booleanBuilder.and(o.created.goe(startDate).and(o.created.lt(endDate)));
         }
 
-        query.offset(pageable.getOffset());
-        query.limit(pageable.getPageSize());
+
+        return booleanBuilder;
+    }
+
+    public List<Order> searchOrders(SearchOrderRequest searchOrderRequest, Pageable pageable) {
+        final QOrder o = QOrder.order;
+        final JPAQuery<Order> query = new JPAQuery<Order>(entityManager)
+                .select(o)
+                .from(o)
+                .where(createSearchCriteria(searchOrderRequest))
+                .orderBy(o.id.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                ;
 
         return query.fetch();
+    }
+
+    public Long countOrders(SearchOrderRequest searchOrderRequest) {
+        final QOrder o = QOrder.order;
+        return new JPAQuery<Order>(entityManager)
+                .select(Wildcard.count)
+                .from(o)
+                .where(createSearchCriteria(searchOrderRequest))
+                .fetchOne()
+                ;
     }
 
     private void validateOrderRequest(OrderRequest orderRequest) {
@@ -176,28 +213,27 @@ public class OrderService {
         if ( orderRequest.isTakeAway() && orderRequest.getServiceNumber() > 0 ) {
             log.debug("Tentativo di creare/aggiornare un ordine da asporto con indicazione dei coperti: {}", orderRequest);
             throw new SagraBadRequestException(
-                    InvalidValue.builder().field("serviceNumber").message("Ordine da asporto non può avere dei coperti").build()
+                    InvalidValue.builder()
+                            .field("serviceNumber")
+                            .value(orderRequest.getServiceNumber())
+                            .message("Ordine da asporto non può avere dei coperti")
+                            .build()
             );
         }
     }
 
-    private void updateService(Order order, OrderRequest orderRequest) {
-        if ( ! order.isTakeAway() && order.getServiceNumber() > 0 ) {
-            if ( settings.getServiceCost().compareTo(BigDecimal.ZERO) > 0 ) {
-                order.setServiceCost(
-                        settings.getServiceCost().multiply(new BigDecimal(orderRequest.getServiceNumber()))
-                );
-            } else {
-                order.setServiceCost(BigDecimal.ZERO);
-            }
+    private BigDecimal calculateServiceCost(OrderRequest orderRequest) {
+        if ( orderRequest.getServiceNumber() > 0 && settings.getServiceCost().compareTo(BigDecimal.ZERO) > 0) {
+            return settings.getServiceCost().multiply(new BigDecimal(orderRequest.getServiceNumber()));
         }
+        return BigDecimal.ZERO;
     }
 
     private  static final BigDecimal ONE_HUNDRED = new BigDecimal(100);
     private BigDecimal calculateTotalAmount(Order order) {
         final BigDecimal total = order.getProducts().stream().map(op -> op.getProduct().getPrice().multiply(new BigDecimal(op.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .add(order.getServiceCost());
+                .add(order.getServiceCost().multiply(new BigDecimal(order.getServiceNumber())));
 
         if ( order.getDiscountRate() != null ) {
             return total.subtract(total.multiply(order.getDiscountRate()).divide(ONE_HUNDRED, RoundingMode.HALF_DOWN).setScale(2, RoundingMode.HALF_DOWN));
@@ -206,7 +242,7 @@ public class OrderService {
         return total;
     }
 
-    private void addProductToOrder(Order order, OrderProductRequest orderProductRequest) {
+    private OrderProduct addProductToOrder(Order order, OrderProductRequest orderProductRequest, int idx) {
         final Product product;
         try {
             product = productService.findById(orderProductRequest.getProductId());
@@ -220,18 +256,22 @@ public class OrderService {
             throw new SagraQuantitaNonSufficiente(InvalidProduct.of(product.getId(), LOCKED));
         }
 
-        if ( ! productService.updateProductQuantity(product, -orderProductRequest.getQuantity()) ) {
+        if ( ! productService.updateProductQuantityForOrder(product, -orderProductRequest.getQuantity()) ) {
             throw new SagraQuantitaNonSufficiente(InvalidProduct.of(product.getId(), NOT_ENOUGH_QUANTITY));
         }
 
         final OrderProduct orderProduct = new OrderProduct();
         orderProduct.setOrder(order);
-
+        orderProduct.setOrderId(order.getId());
         orderProduct.setProduct(product);
+        orderProduct.setProductId(product.getId());
         orderProduct.setPrice(product.getPrice());
         orderProduct.setQuantity(orderProductRequest.getQuantity());
         orderProduct.setNote(orderProduct.getNote());
-        order.getProducts().add(orderProduct);
+        orderProduct.setIdx(idx);
+        order.getProducts().add(idx, orderProduct);
+
+        return orderProduct;
     }
 
     private Optional<BigDecimal> getDiscountRate(OrderRequest orderRequest) {
@@ -247,5 +287,78 @@ public class OrderService {
         }
 
         return Optional.empty();
+    }
+
+    public Map<LocalDate, StatOrder> ordersStats(LocalDate date) {
+        final QOrder o = QOrder.order;
+
+
+
+        final JPAQuery<Tuple> query = new JPAQuery<>(entityManager)
+                .select(o.created.year(), o.created.month(), o.created.dayOfMonth(),
+                        o.totalAmount.sumBigDecimal(), o.serviceNumber.sumLong(), Wildcard.count)
+                .from(o)
+                .orderBy(o.created.year().asc(), o.created.month().asc(), o.created.dayOfMonth().asc())
+                .groupBy(o.created.year(), o.created.month(), o.created.dayOfMonth());
+
+        if ( date != null ) {
+            final LocalDateTime startDate = date.atStartOfDay();
+            final LocalDateTime endDate = date.plusDays(1).atStartOfDay();
+            query.where((o.created.goe(startDate).and(o.created.lt(endDate))));
+        }
+
+        final HashMap<LocalDate, StatOrder> prodMap = new LinkedHashMap<>();
+        query.fetch().forEach(t -> {
+            final StatOrder result = new StatOrder();
+            result.setTotalAmount(t.get(o.totalAmount.sumBigDecimal()));
+            result.setCount(t.get(Wildcard.count));
+            result.setTotalServiceNumber(t.get(o.serviceNumber.sumLong()));
+            final LocalDate localDate = createLocalDate(t);
+            result.setProducts(orderedProductsStats(localDate));
+
+            prodMap.putIfAbsent(localDate, result);
+        });
+
+        return prodMap;
+    }
+
+    public List<StatOrderProduct> orderedProductsStats(LocalDate date) {
+        final QOrder o = QOrder.order;
+        final QOrderProduct op = QOrderProduct.orderProduct;
+
+        final LocalDateTime startDate = date.atStartOfDay();
+        final LocalDateTime endDate = date.plusDays(1).atStartOfDay();
+
+
+        final JPAQuery<Tuple> query = new JPAQuery<>(entityManager)
+                .select(o.created.year(), o.created.month(), o.created.dayOfMonth(),
+                        op.product.id, op.price.sumBigDecimal(), Wildcard.count)
+                .from(op)
+                .join(op.order, o)
+                .where((o.created.goe(startDate).and(o.created.lt(endDate))))
+                .orderBy(o.created.year().asc(), o.created.month().asc(), o.created.dayOfMonth().asc(), Wildcard.count.desc())
+                .groupBy(o.created.year(), o.created.month(), o.created.dayOfMonth(), op.product.id);
+
+        return query.fetch().stream().map(t -> {
+            final StatOrderProduct result = new StatOrderProduct();
+            result.setTotalAmount(t.get(op.price.sumBigDecimal()));
+            result.setCount(t.get(Wildcard.count));
+            result.setProductId(t.get(op.product.id));
+            return result;
+
+        }).toList();
+        
+    }
+
+    private LocalDate createLocalDate(Tuple t) {
+        final QOrder o = QOrder.order;
+        final Integer year = t.get(o.created.year());
+        final Integer month = t.get(o.created.month());
+        final Integer day = t.get(o.created.dayOfMonth());
+
+        if ( year == null || month == null && day == null)
+            throw new RuntimeException("Anno, mese o giorno non può essere nulla nell'aggregazione");
+
+        return LocalDate.of(year, month, day);
     }
 }

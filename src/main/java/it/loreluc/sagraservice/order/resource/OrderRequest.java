@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
@@ -22,7 +23,7 @@ public class OrderRequest {
 
     private boolean takeAway = false;
 
-    @Min(1)
+    @Min(0) @NotNull
     private Integer serviceNumber;
 
     private Long discountId;

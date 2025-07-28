@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.loreluc.sagraservice.error.ErrorResource;
+import it.loreluc.sagraservice.error.ErrorResourceNotEnoughQuantity;
 import it.loreluc.sagraservice.error.InvalidProduct;
 import it.loreluc.sagraservice.error.SagraQuantitaNonSufficiente;
 import it.loreluc.sagraservice.product.resource.ProductQuantityRequest;
@@ -94,15 +95,22 @@ public class ProductController {
     }
 
     @PutMapping("/{productId}/updateQuantity")
-    @Operation(summary = "Modifica la quantità disponibile di un prodotto")
+    @Operation(summary = "Varia la quantità disponibile di un prodotto",
+            description = """
+                          Varia la quantità iniziale e disponibile di un prodotto con la variazione (positiva o negativa").
+                          Esempio: -10 o 10 per diminuire o aumentare la quantità.
+                          
+                          In caso di diminuzione (valore negativo) se la quantità non è sufficiente da errore (codice 450)
+                          """
+    )
     @ApiResponse(responseCode = "200")
     @ApiResponse(responseCode = "400", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Richiesta non valida")
     @ApiResponse(responseCode = "401", content = @Content)
     @ApiResponse(responseCode = "403", content = @Content)
     @ApiResponse(responseCode = "404", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Prodotto non trovata")
-    @ApiResponse(responseCode = "450", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Quantità prodotto insufficiente per la variazione richiesta")
+    @ApiResponse(responseCode = "450", content = @Content(schema = @Schema(implementation = ErrorResourceNotEnoughQuantity.class)), description = "Quantità prodotto insufficiente per la variazione richiesta")
     public ProductResponse productUpdateQuantity(@PathVariable Long productId, @RequestBody @Valid ProductQuantityRequest productQuantityRequest) throws SagraQuantitaNonSufficiente {
-        if ( productService.updateProductQuantity(productId, productQuantityRequest.getQuantityVariation())) {
+        if ( productService.updateProductQuantityAvailability(productId, productQuantityRequest.getQuantityVariation())) {
             return productService.toResource(productService.findById(productId));
         } else {
             throw new SagraQuantitaNonSufficiente(InvalidProduct.of(productId, NOT_ENOUGH_QUANTITY));
@@ -120,6 +128,26 @@ public class ProductController {
     public void productDelete(@PathVariable Long productId) {
        productService.delete(productId);
     }
+
+    @PutMapping("/{productId}/initQuantity")
+    @Operation(summary = "Modifica la quantità iniziale di un prodotto",
+            description = """
+                          Modifica la quantità iniziale del prodotto (inizializzazione giornaliera), impostando il valore passato che deve essere >= 0.
+                          Viene sovrascritta la quantità disponibile e quella iniziale.
+                          
+                          Se ci sono degli ordini già effettuati in data odierna non è possibile effettuare l'inizializzazione (409)
+                          """
+    )
+    @ApiResponse(responseCode = "200")
+    @ApiResponse(responseCode = "400", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Richiesta non valida")
+    @ApiResponse(responseCode = "401", content = @Content)
+    @ApiResponse(responseCode = "403", content = @Content)
+    @ApiResponse(responseCode = "409", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Sono presenti degli ordini in data odierna")
+    public ProductResponse productInitQuantity(@PathVariable Long productId, @RequestBody @Valid ProductQuantityRequest productQuantityRequest) {
+        productService.initProductQuantity(productId, productQuantityRequest.getQuantityVariation());
+        return productService.toResource(productService.findById(productId));
+    }
+
 
 
 }

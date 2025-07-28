@@ -1,0 +1,11 @@
+courses:
+  - id: 1
+    name: Primi
+  - id: 2
+    name: Secondi
+  - id: 3
+    name: Panzanelle
+  - id: 4
+    name: Bar
+  - id: 5
+    name: Test Test

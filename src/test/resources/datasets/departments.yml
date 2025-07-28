@@ -1,0 +1,10 @@
+
+departments:
+  - id: 1
+    name: Cucina
+  - id: 2
+    name: Griglia
+  - id: 3
+    name: Bar
+  - id: 4
+    name: Test Test

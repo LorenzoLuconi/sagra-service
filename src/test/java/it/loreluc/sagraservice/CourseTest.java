@@ -1,5 +1,6 @@
 package it.loreluc.sagraservice;
 
+import com.github.database.rider.core.api.dataset.DataSet;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -12,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class CourseTest extends CommonTest {
 
     @Test
+    @DataSet( value = "courses.yml", cleanBefore = true)
     public void course_read_by_id() throws Exception {
         this.mockMvc.perform(get("/v1/courses/{id}", 1).accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
@@ -22,6 +24,7 @@ public class CourseTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = "courses.yml", cleanBefore = true)
     public void course_read_not_found() throws Exception {
         this.mockMvc.perform(get("/v1/courses/{id}", 1111).accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
@@ -31,6 +34,7 @@ public class CourseTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = "courses.yml", cleanBefore = true)
     public void course_create() throws Exception {
         final String request = """
                 {
@@ -50,10 +54,11 @@ public class CourseTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = "courses.yml", cleanBefore = true)
     public void course_create_conflict() throws Exception {
         final String request = """
                 {
-                    "name": "Primi"
+                    "name": "Secondi"
                 }
                 """;
         this.mockMvc.perform(post("/v1/courses")
@@ -68,6 +73,7 @@ public class CourseTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = "courses.yml", cleanBefore = true)
     public void course_delete() throws Exception {
         this.mockMvc.perform(delete("/v1/courses/{id}", 5).accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
@@ -77,6 +83,7 @@ public class CourseTest extends CommonTest {
 
 
     @Test
+    @DataSet( value = {"courses.yml", "departments.yml","products.yml"}, cleanBefore = true)
     public void course_delete_conflict() throws Exception {
         this.mockMvc.perform(delete("/v1/courses/{id}", 1).accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
@@ -86,6 +93,7 @@ public class CourseTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = "courses.yml", cleanBefore = true)
     public void course_update() throws Exception {
         final String request = """
                 {
@@ -105,6 +113,7 @@ public class CourseTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = "courses.yml", cleanBefore = true)
     public void course_update_conflict() throws Exception {
         final String request = """
                 {
@@ -123,6 +132,7 @@ public class CourseTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = "courses.yml", cleanBefore = true)
     public void course_search() throws Exception {
         this.mockMvc.perform(get("/v1/courses")
                         .accept(MediaType.APPLICATION_JSON)
@@ -139,6 +149,7 @@ public class CourseTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = "courses.yml", cleanBefore = true)
     public void course_search_by_name() throws Exception {
         this.mockMvc.perform(get("/v1/courses?name=Test")
                         .accept(MediaType.APPLICATION_JSON)

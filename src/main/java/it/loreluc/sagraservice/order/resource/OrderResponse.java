@@ -13,29 +13,40 @@ import java.util.List;
 @Schema(name = "Order")
 public class OrderResponse {
 
+
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
     private Long id;
 
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
     private String customer;
 
     private String note;
 
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
     private boolean takeAway;
 
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
     private Integer serviceNumber;
 
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
     private BigDecimal serviceCost;
 
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
     private BigDecimal totalAmount;
 
     private BigDecimal discountRate;
 
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
     private String username;
 
     @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
     private LocalDateTime created;
 
     @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
     private LocalDateTime lastUpdate;
 
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
     private List<OrderProductResponse> products = new ArrayList<>();
 }

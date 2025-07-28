@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
-@EqualsAndHashCode(of = {"id"})
+@EqualsAndHashCode(of = {"productId"})
 @Schema(name = "OrderedProductRequest")
 public class OrderProductRequest {
 

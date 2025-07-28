@@ -1,0 +1,32 @@
+orders:
+  - id: 1
+    username: lorenzo
+    customer: Lorenzo Luconi
+    take_away: 0
+    service_number: 6
+    service_cost: 3.0
+    total_amount: 34.4
+    created: "[now]"
+    last_update: "[now]"
+
+orders_products:
+  - order_id: 1
+    product_id: 2
+    price: 0.8
+    quantity: 3
+    idx: 1
+  - order_id: 1
+    product_id: 1
+    price: 8
+    quantity: 3
+    idx: 2
+  - order_id: 1
+    product_id: 5
+    price: 1.5
+    quantity: 2
+    idx: 3
+  - order_id: 1
+    product_id: 6
+    price: 2.0
+    quantity: 1
+    idx: 4

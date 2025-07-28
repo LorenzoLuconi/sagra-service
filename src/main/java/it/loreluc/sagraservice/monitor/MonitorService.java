@@ -8,14 +8,13 @@ import it.loreluc.sagraservice.jpa.Monitor;
 import it.loreluc.sagraservice.jpa.MonitorProduct;
 import it.loreluc.sagraservice.jpa.MonitorProductId;
 import it.loreluc.sagraservice.jpa.Product;
-import it.loreluc.sagraservice.monitor.resource.MonitorProductResource;
 import it.loreluc.sagraservice.monitor.resource.MonitorResource;
 import it.loreluc.sagraservice.product.ProductService;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -24,6 +23,7 @@ import java.util.Objects;
 public class MonitorService {
     private final MonitorRepository monitorRepository;
     private final ProductService productService;
+    private final EntityManager entityManager;
 
     public Monitor findById(Long monitorId) {
         return monitorRepository.findById(Objects.requireNonNull(monitorId))
@@ -54,6 +54,7 @@ public class MonitorService {
 
         monitor.setName(monitorResource.getName());
         monitor.getProducts().clear();
+
         setMonitorProducts(monitor, monitorResource.getProducts());
 
         return monitorRepository.save(monitor);
@@ -69,25 +70,25 @@ public class MonitorService {
         return monitorRepository.findAll();
     }
 
-    private void setMonitorProducts(Monitor monitor, List<MonitorProductResource> monitorProductResources) {
-        monitorProductResources.stream()
-                .sorted(Comparator.comparing(MonitorProductResource::getPriority))
-                .forEach(mp -> {
-                    final Product product;
+    private void setMonitorProducts(Monitor monitor, List<Long> productsId) {
 
-                    try {
-                        product = productService.findById(mp.getProductId());
-                    } catch (SagraNotFoundException e) {
-                        throw new SagraBadRequestException(
-                                InvalidValue.builder().field("productId").value(mp.getProductId()).message("Prodotto non trovato").build()
-                        );
-                    }
-                    final MonitorProduct monitorProduct = new MonitorProduct();
-                    monitorProduct.setProduct(product);
-                    monitorProduct.setMonitor(monitor);
-                    monitorProduct.setPriority(mp.getPriority());
-                    monitorProduct.setId(new MonitorProductId(monitor.getId(), product.getId()));
-                    monitor.getProducts().add(monitorProduct);
-                });
+        short idx = (short) 1;
+        for  (Long productId : productsId) {
+            final Product product;
+
+            try {
+                product = productService.findById(productId);
+            } catch (SagraNotFoundException e) {
+                throw new SagraBadRequestException(
+                        InvalidValue.builder().field("productId").value(productId).message("Prodotto non trovato").build()
+                );
+            }
+            final MonitorProduct monitorProduct = new MonitorProduct();
+            monitorProduct.setProduct(product);
+            monitorProduct.setMonitor(monitor);
+            monitorProduct.setIdx(idx++);
+            monitorProduct.setId(new MonitorProductId(monitor.getId(), product.getId()));
+            monitor.getProducts().add(monitorProduct);
+        }
     }
 }

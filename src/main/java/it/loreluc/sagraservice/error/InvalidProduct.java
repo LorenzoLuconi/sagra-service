@@ -1,5 +1,6 @@
 package it.loreluc.sagraservice.error;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -16,8 +17,13 @@ public class InvalidProduct {
         private final String message;
     }
 
+    @Schema(requiredMode =  Schema.RequiredMode.REQUIRED)
     private final Long productId;
+
+    @Schema(requiredMode =  Schema.RequiredMode.REQUIRED)
     private final String message;
+
+    @Schema(requiredMode =  Schema.RequiredMode.REQUIRED)
     private final ProductError error;
 
     private InvalidProduct(Long productId, ProductError productError) {
