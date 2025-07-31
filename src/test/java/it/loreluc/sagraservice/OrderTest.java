@@ -762,6 +762,60 @@ public class OrderTest extends CommonTest {
     }
 
     @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml","discounts.yml"}, cleanBefore = true)
+    public void order_update_remove_discount() throws Exception {
+
+        // Quantità devono rimanere uguali
+        checkProductQuantity(1, 200);
+        checkProductQuantity(2, 500);
+        checkProductQuantity(5, 30);
+        checkProductQuantity(6, 1000);
+
+        final String request = """
+                {
+                      "customer": "Lorenzo Luconi",
+                      "takeAway": false,
+                      "serviceNumber": 6,
+                      "username": "lorenzo",
+                      "products": [
+                          {
+                              "productId": 2,
+                              "quantity": 3
+                          },
+                          {
+                              "productId": 1,
+                              "quantity": 3
+                          },
+                          {
+                              "productId": 5,
+                              "quantity": 2
+                          },
+                          {
+                              "productId": 6,
+                              "quantity": 1
+                          }
+                      ]
+                  }
+                """;
+        this.mockMvc.perform(put("/v1/orders/{id}", 1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(request)
+                )
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.discountRate").doesNotExist())
+                .andExpect(jsonPath("$.totalAmount", is(34.4)))
+        ;
+
+        checkProductQuantity(1, 200);
+        checkProductQuantity(2, 500);
+        checkProductQuantity(5, 30);
+        checkProductQuantity(6, 1000);
+    }
+
+    @Test
     @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml"}, cleanBefore = true)
     public void order_update_service() throws Exception {
 

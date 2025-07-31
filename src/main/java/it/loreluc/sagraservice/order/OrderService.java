@@ -91,7 +91,12 @@ public class OrderService {
         validateOrderRequest(orderRequest);
 
         orderMapper.updateEntity(order, orderRequest);
-        getDiscountRate(orderRequest).ifPresent(order::setDiscountRate);
+        final Optional<BigDecimal> discountRateOptional = getDiscountRate(orderRequest);
+        if  (discountRateOptional.isPresent()) {
+            order.setDiscountRate(discountRateOptional.get());
+        } else {
+            order.setDiscountRate(null);
+        }
 
         final Map<Long, OrderProduct> orderedProductsMap = order.getProducts().stream()
                 .collect(Collectors.toMap(o -> o.getProduct().getId(), Function.identity()));
