@@ -2,6 +2,7 @@ package it.loreluc.sagraservice.order.resource;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -27,7 +28,7 @@ public class OrderRequest {
     @Min(0) @NotNull
     private Integer serviceNumber;
 
-    @Min(0)
+    @Min(0) @Max(100)
     private BigDecimal discountRate;
 
     @NotEmpty
