@@ -83,13 +83,13 @@ insert into products_quantity(product_id, initial_quantity, available_quantity) 
 
 
 insert into discounts (name, rate) VALUES
-('Sconto 20% amici', 20.0),
-('Sconto 100% amici speciali', 100.0)
+('Sconto amici', 20.0),
+('Pasto omaggio', 100.0)
 ;
 
 INSERT INTO `orders` VALUES
 (1,'Sandro Pertini',NULL,0,6,0.50,107.50,'lorenzo',NULL,'2025-07-25 07:50:39','2025-07-25 07:50:39'),
-(2,'Sergio Mattarella',NULL,1,0,0.50,29.20,'lorenzo',NULL,'2025-07-25 07:52:08','2025-07-25 07:52:08')
+(2,'Sergio Mattarella',NULL,1,0,0.50,29.20,'lorenzo',20,'2025-07-25 07:52:08','2025-07-25 07:52:08')
 ;
 
 INSERT INTO `orders_products` (order_id, product_id, price, quantity, note, idx) VALUES
