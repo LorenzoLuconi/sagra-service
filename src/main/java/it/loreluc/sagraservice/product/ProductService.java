@@ -147,6 +147,10 @@ public class ProductService {
     @Transactional(rollbackFor = Throwable.class)
     public void initProductQuantity(Long productId, Integer quantityInitialization) {
 
+        if ( quantityInitialization == null || quantityInitialization < 0 ) {
+            throw new SagraBadRequestException("La quantità iniziale deve essere maggiore o uguale a 0");
+        }
+
         final Product product = findById(productId);
         checkOrdersForQuantityInit();
 
