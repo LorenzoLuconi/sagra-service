@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -26,7 +27,8 @@ public class OrderRequest {
     @Min(0) @NotNull
     private Integer serviceNumber;
 
-    private Long discountId;
+    @Min(0)
+    private BigDecimal discountRate;
 
     @NotEmpty
     private List<@Valid OrderProductRequest> products;

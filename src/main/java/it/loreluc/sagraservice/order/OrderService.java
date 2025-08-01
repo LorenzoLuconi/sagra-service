@@ -55,7 +55,7 @@ public class OrderService {
 
         validateOrderRequest(orderRequest);
         final Order order = orderMapper.toEntity(orderRequest);
-        getDiscountRate(orderRequest).ifPresent(order::setDiscountRate);
+        //getDiscountRate(orderRequest).ifPresent(order::setDiscountRate);
         order.setServiceCost(settings.getServiceCost());
 
         // FIXME manca gestione dell'utente
@@ -91,12 +91,12 @@ public class OrderService {
         validateOrderRequest(orderRequest);
 
         orderMapper.updateEntity(order, orderRequest);
-        final Optional<BigDecimal> discountRateOptional = getDiscountRate(orderRequest);
-        if  (discountRateOptional.isPresent()) {
-            order.setDiscountRate(discountRateOptional.get());
-        } else {
-            order.setDiscountRate(null);
-        }
+//        final Optional<BigDecimal> discountRateOptional = getDiscountRate(orderRequest);
+//        if  (discountRateOptional.isPresent()) {
+//            order.setDiscountRate(discountRateOptional.get());
+//        } else {
+//            order.setDiscountRate(null);
+//        }
 
         final Map<Long, OrderProduct> orderedProductsMap = order.getProducts().stream()
                 .collect(Collectors.toMap(o -> o.getProduct().getId(), Function.identity()));
@@ -279,20 +279,20 @@ public class OrderService {
         return orderProduct;
     }
 
-    private Optional<BigDecimal> getDiscountRate(OrderRequest orderRequest) {
-        if ( orderRequest.getDiscountId() != null ) {
-            try {
-                final Discount discount = discountService.findById(orderRequest.getDiscountId());
-                return Optional.of(discount.getRate());
-            } catch (SagraNotFoundException e) {
-                throw new SagraBadRequestException(
-                        InvalidValue.builder().field("discountId").value(orderRequest.getDiscountId()).message("Codice sconto non trovato").build()
-                );
-            }
-        }
-
-        return Optional.empty();
-    }
+//    private Optional<BigDecimal> getDiscountRate(OrderRequest orderRequest) {
+//        if ( orderRequest.getDiscountId() != null ) {
+//            try {
+//                final Discount discount = discountService.findById(orderRequest.getDiscountId());
+//                return Optional.of(discount.getRate());
+//            } catch (SagraNotFoundException e) {
+//                throw new SagraBadRequestException(
+//                        InvalidValue.builder().field("discountId").value(orderRequest.getDiscountId()).message("Codice sconto non trovato").build()
+//                );
+//            }
+//        }
+//
+//        return Optional.empty();
+//    }
 
     public Map<LocalDate, StatOrder> ordersStats(LocalDate date) {
         final QOrder o = QOrder.order;

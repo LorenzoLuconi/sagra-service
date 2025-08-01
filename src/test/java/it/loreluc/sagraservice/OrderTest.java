@@ -154,7 +154,7 @@ public class OrderTest extends CommonTest {
                    "note": "Allergico" ,
                    "serviceNumber": 3,
                    "username": "lorenzo",
-                   "discountId": 2,
+                   "discountRate": 100,
                    "products": [
                      {
                        "productId": 2,
@@ -178,7 +178,7 @@ public class OrderTest extends CommonTest {
                 .andExpect(jsonPath("$.customer", is("Francesco Cossiga")))
                 .andExpect(jsonPath("$.note", is("Allergico")))
                 .andExpect(jsonPath("$.username", is("lorenzo")))
-                .andExpect(jsonPath("$.discountRate", is(100.0)))
+                .andExpect(jsonPath("$.discountRate", is(100)))
                 .andExpect(jsonPath("$.takeAway", is(false)))
                 .andExpect(jsonPath("$.serviceNumber", is(3)))
                 .andExpect(jsonPath("$.serviceCost", is(0.5)))
@@ -708,7 +708,7 @@ public class OrderTest extends CommonTest {
 
     @Test
     @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml","discounts.yml"}, cleanBefore = true)
-    public void order_update_discount() throws Exception {
+    public void order_update_add_discount() throws Exception {
 
         // Quantità devono rimanere uguali
         checkProductQuantity(1, 200);
@@ -716,12 +716,18 @@ public class OrderTest extends CommonTest {
         checkProductQuantity(5, 30);
         checkProductQuantity(6, 1000);
 
+        this.mockMvc.perform(get("/v1/orders/{id}", 1).accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.discountRate").doesNotExist());
+
         final String request = """
                 {
                       "customer": "Lorenzo Luconi",
                       "takeAway": false,
                       "serviceNumber": 6,
-                      "discountId": 1,
+                      "discountRate": 30,
                       "username": "lorenzo",
                       "products": [
                           {
@@ -751,8 +757,8 @@ public class OrderTest extends CommonTest {
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
-                .andExpect(jsonPath("$.discountRate", is(20.0)))
-                .andExpect(jsonPath("$.totalAmount", is(27.52)))
+                .andExpect(jsonPath("$.discountRate", is(30)))
+                .andExpect(jsonPath("$.totalAmount", is(24.08)))
         ;
 
         checkProductQuantity(1, 200);
@@ -765,6 +771,13 @@ public class OrderTest extends CommonTest {
     @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml", "orders.yml","discounts.yml"}, cleanBefore = true)
     public void order_update_remove_discount() throws Exception {
 
+        this.mockMvc.perform(get("/v1/orders/{id}", 2).accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(2)))
+                .andExpect(jsonPath("$.discountRate", is(10.0)));
+
+
         // Quantità devono rimanere uguali
         checkProductQuantity(1, 200);
         checkProductQuantity(2, 500);
@@ -773,40 +786,32 @@ public class OrderTest extends CommonTest {
 
         final String request = """
                 {
-                      "customer": "Lorenzo Luconi",
-                      "takeAway": false,
-                      "serviceNumber": 6,
-                      "username": "lorenzo",
-                      "products": [
-                          {
-                              "productId": 2,
-                              "quantity": 3
-                          },
-                          {
-                              "productId": 1,
-                              "quantity": 3
-                          },
-                          {
-                              "productId": 5,
-                              "quantity": 2
-                          },
-                          {
-                              "productId": 6,
-                              "quantity": 1
-                          }
-                      ]
-                  }
+                       "customer": "Sandro Pertini",
+                       "note": "test",
+                       "takeAway": true,
+                       "serviceNumber": 0,
+                       "products": [
+                            {
+                               "productId": 2,
+                               "quantity": 5
+                           },
+                            {
+                               "productId": 5,
+                               "quantity": 5
+                           }
+                       ]
+                   }
                 """;
-        this.mockMvc.perform(put("/v1/orders/{id}", 1)
+        this.mockMvc.perform(put("/v1/orders/{id}", 2)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(request)
                 )
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.id", is(2)))
                 .andExpect(jsonPath("$.discountRate").doesNotExist())
-                .andExpect(jsonPath("$.totalAmount", is(34.4)))
+                .andExpect(jsonPath("$.totalAmount", is(11.5)))
         ;
 
         checkProductQuantity(1, 200);
