@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 
 import static it.loreluc.sagraservice.error.InvalidProduct.ProductError.LOCKED;
 import static it.loreluc.sagraservice.error.InvalidProduct.ProductError.NOT_ENOUGH_QUANTITY;
+import static java.math.BigDecimal.ONE;
 
 @Service
 @RequiredArgsConstructor
@@ -337,12 +338,12 @@ public class OrderService {
 
         final JPAQuery<Tuple> query = new JPAQuery<>(entityManager)
                 .select(o.created.year(), o.created.month(), o.created.dayOfMonth(),
-                        op.product.id, op.price.sumBigDecimal(), op.product.parentId, Wildcard.count)
+                        op.product.id, op.product.parentId, op.price, o.discountRate, op.quantity.sumLong())
                 .from(op)
                 .join(op.order, o)
                 .where((o.created.goe(startDate).and(o.created.lt(endDate))))
-                .orderBy(o.created.year().asc(), o.created.month().asc(), o.created.dayOfMonth().asc(), Wildcard.count.desc())
-                .groupBy(o.created.year(), o.created.month(), o.created.dayOfMonth(), op.product.id, op.product.parentId);
+                .orderBy(o.created.year().asc(), o.created.month().asc(), o.created.dayOfMonth().asc())
+                .groupBy(o.created.year(), o.created.month(), o.created.dayOfMonth(), op.product.id, op.product.parentId, op.price, o.discountRate);
 
 
         final Map<Long, StatOrderProduct> prodMap = new LinkedHashMap<>();
@@ -353,16 +354,26 @@ public class OrderService {
 
             final StatOrderProduct statOrderProduct = prodMap.get(key);
 
+            final BigDecimal discountRate = t.get(o.discountRate);
+
+            final BigDecimal totalPrice;
+            if ( discountRate == null )
+                totalPrice = t.get(op.price).multiply(new BigDecimal(t.get(op.quantity.sumLong())));
+            else
+                totalPrice = t.get(op.price).multiply(new BigDecimal(t.get(op.quantity.sumLong())))
+                        .multiply( ONE.subtract(discountRate.divide(ONE_HUNDRED, RoundingMode.HALF_DOWN)).setScale(2, RoundingMode.HALF_DOWN));
+
+
             if ( statOrderProduct == null ) {
                 final StatOrderProduct result = new StatOrderProduct();
-                result.setTotalAmount(t.get(op.price.sumBigDecimal()));
-                result.setCount(t.get(Wildcard.count));
+                result.setTotalAmount(totalPrice);
+                result.setCount(t.get(op.quantity.sumLong()));
                 result.setProductId(key);
 
                 prodMap.put(key, result);
             } else {
-                statOrderProduct.setCount(statOrderProduct.getCount() + Objects.requireNonNull(t.get(Wildcard.count)));
-                statOrderProduct.setTotalAmount(statOrderProduct.getTotalAmount().add(t.get(op.price.sumBigDecimal())));
+                statOrderProduct.setCount(statOrderProduct.getCount() + Objects.requireNonNull(t.get(op.quantity.sumLong())));
+                statOrderProduct.setTotalAmount(statOrderProduct.getTotalAmount().add(totalPrice));
             }
 
         });
