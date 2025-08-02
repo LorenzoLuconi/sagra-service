@@ -15,5 +15,5 @@ public class StatOrderProduct {
     private BigDecimal totalAmount;
 
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Quantità venduta del prodotto")
-    private Long count;
+    private Long totalQuantity;
 }

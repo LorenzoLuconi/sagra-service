@@ -367,12 +367,12 @@ public class OrderService {
             if ( statOrderProduct == null ) {
                 final StatOrderProduct result = new StatOrderProduct();
                 result.setTotalAmount(totalPrice);
-                result.setCount(t.get(op.quantity.sumLong()));
+                result.setTotalQuantity(t.get(op.quantity.sumLong()));
                 result.setProductId(key);
 
                 prodMap.put(key, result);
             } else {
-                statOrderProduct.setCount(statOrderProduct.getCount() + Objects.requireNonNull(t.get(op.quantity.sumLong())));
+                statOrderProduct.setTotalQuantity(statOrderProduct.getTotalQuantity() + t.get(op.quantity.sumLong()));
                 statOrderProduct.setTotalAmount(statOrderProduct.getTotalAmount().add(totalPrice));
             }
 
