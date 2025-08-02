@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.Collection;
 
 @Schema(name = "StatsOrder")
 @Data
@@ -19,5 +19,5 @@ public class StatOrder {
     private Long count;
 
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Dettagli dei prodotti ordinati")
-    private List<StatOrderProduct> products;
+    private Collection<StatOrderProduct> products;
 }

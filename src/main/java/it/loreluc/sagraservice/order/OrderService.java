@@ -327,7 +327,7 @@ public class OrderService {
         return prodMap;
     }
 
-    public List<StatOrderProduct> orderedProductsStats(LocalDate date) {
+    public Collection<StatOrderProduct> orderedProductsStats(LocalDate date) {
         final QOrder o = QOrder.order;
         final QOrderProduct op = QOrderProduct.orderProduct;
 
@@ -337,21 +337,37 @@ public class OrderService {
 
         final JPAQuery<Tuple> query = new JPAQuery<>(entityManager)
                 .select(o.created.year(), o.created.month(), o.created.dayOfMonth(),
-                        op.product.id, op.price.sumBigDecimal(), Wildcard.count)
+                        op.product.id, op.price.sumBigDecimal(), op.product.parentId, Wildcard.count)
                 .from(op)
                 .join(op.order, o)
                 .where((o.created.goe(startDate).and(o.created.lt(endDate))))
                 .orderBy(o.created.year().asc(), o.created.month().asc(), o.created.dayOfMonth().asc(), Wildcard.count.desc())
-                .groupBy(o.created.year(), o.created.month(), o.created.dayOfMonth(), op.product.id);
+                .groupBy(o.created.year(), o.created.month(), o.created.dayOfMonth(), op.product.id, op.product.parentId);
 
-        return query.fetch().stream().map(t -> {
-            final StatOrderProduct result = new StatOrderProduct();
-            result.setTotalAmount(t.get(op.price.sumBigDecimal()));
-            result.setCount(t.get(Wildcard.count));
-            result.setProductId(t.get(op.product.id));
-            return result;
 
-        }).toList();
+        final Map<Long, StatOrderProduct> prodMap = new LinkedHashMap<>();
+        query.fetch().forEach(t -> {
+            final Long parentId = t.get(op.product.parentId);
+            final Long productId = t.get(op.product.id);
+            final Long key = parentId == null ? productId : parentId;
+
+            final StatOrderProduct statOrderProduct = prodMap.get(key);
+
+            if ( statOrderProduct == null ) {
+                final StatOrderProduct result = new StatOrderProduct();
+                result.setTotalAmount(t.get(op.price.sumBigDecimal()));
+                result.setCount(t.get(Wildcard.count));
+                result.setProductId(key);
+
+                prodMap.put(key, result);
+            } else {
+                statOrderProduct.setCount(statOrderProduct.getCount() + Objects.requireNonNull(t.get(Wildcard.count)));
+                statOrderProduct.setTotalAmount(statOrderProduct.getTotalAmount().add(t.get(op.price.sumBigDecimal())));
+            }
+
+        });
+
+        return prodMap.values();
         
     }
 
