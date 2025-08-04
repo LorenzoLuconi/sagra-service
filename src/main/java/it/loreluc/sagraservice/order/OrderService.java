@@ -9,10 +9,7 @@ import it.loreluc.sagraservice.config.SagraSettings;
 import it.loreluc.sagraservice.discount.DiscountService;
 import it.loreluc.sagraservice.error.*;
 import it.loreluc.sagraservice.jpa.*;
-import it.loreluc.sagraservice.order.resource.OrderProductRequest;
-import it.loreluc.sagraservice.order.resource.OrderRequest;
-import it.loreluc.sagraservice.order.resource.StatOrder;
-import it.loreluc.sagraservice.order.resource.StatOrderProduct;
+import it.loreluc.sagraservice.order.resource.*;
 import it.loreluc.sagraservice.product.ProductService;
 import it.loreluc.sagraservice.security.UsersRepository;
 import jakarta.persistence.EntityManager;
@@ -298,8 +295,6 @@ public class OrderService {
     public Map<LocalDate, StatOrder> ordersStats(LocalDate date) {
         final QOrder o = QOrder.order;
 
-
-
         final JPAQuery<Tuple> query = new JPAQuery<>(entityManager)
                 .select(o.created.year(), o.created.month(), o.created.dayOfMonth(),
                         o.totalAmount.sumBigDecimal(), o.serviceNumber.sumLong(), Wildcard.count)
@@ -321,9 +316,12 @@ public class OrderService {
             result.setTotalServiceNumber(t.get(o.serviceNumber.sumLong()));
             final LocalDate localDate = createLocalDate(t);
             result.setProducts(orderedProductsStats(localDate));
+            orderedTakeWayStats(localDate).ifPresent(result::setTakeAway);
+            result.setDepartments(orderedDepartmentsStats(localDate));
 
             prodMap.putIfAbsent(localDate, result);
         });
+
 
         return prodMap;
     }
@@ -337,13 +335,11 @@ public class OrderService {
 
 
         final JPAQuery<Tuple> query = new JPAQuery<>(entityManager)
-                .select(o.created.year(), o.created.month(), o.created.dayOfMonth(),
-                        op.product.id, op.product.parentId, op.price, o.discountRate, op.quantity.sumLong())
+                .select(op.product.id, op.product.parentId, op.price, o.discountRate, op.quantity.sumLong())
                 .from(op)
                 .join(op.order, o)
                 .where((o.created.goe(startDate).and(o.created.lt(endDate))))
-                .orderBy(o.created.year().asc(), o.created.month().asc(), o.created.dayOfMonth().asc())
-                .groupBy(o.created.year(), o.created.month(), o.created.dayOfMonth(), op.product.id, op.product.parentId, op.price, o.discountRate);
+                .groupBy(op.product.id, op.product.parentId, op.price, o.discountRate);
 
 
         final Map<Long, StatOrderProduct> prodMap = new LinkedHashMap<>();
@@ -381,6 +377,77 @@ public class OrderService {
         return prodMap.values();
         
     }
+
+    public Optional<StatOrderTakeAway> orderedTakeWayStats(LocalDate date) {
+        final QOrder o = QOrder.order;
+
+        final LocalDateTime startDate = date.atStartOfDay();
+        final LocalDateTime endDate = date.plusDays(1).atStartOfDay();
+
+
+        final JPAQuery<Tuple> query = new JPAQuery<>(entityManager)
+                .select(Wildcard.count, o.totalAmount.sumBigDecimal())
+                .from(o)
+                .where((o.created.goe(startDate).and(o.created.lt(endDate)))
+                        .and(o.takeAway.isTrue())
+                );
+
+        final Tuple tuple = query.fetchOne();
+
+        if (tuple != null ) {
+            final Long count = tuple.get(Wildcard.count);
+            if ( count == null || count == 0 )
+                return Optional.empty();
+
+            return Optional.of(new StatOrderTakeAway(count, tuple.get(o.totalAmount.sumBigDecimal())));
+        }
+
+        return Optional.empty();
+    }
+
+    public Collection<StatOrderDepartment> orderedDepartmentsStats(LocalDate date) {
+        final QOrder o = QOrder.order;
+        final QOrderProduct op = QOrderProduct.orderProduct;
+        final QProduct p = QProduct.product;
+
+        final LocalDateTime startDate = date.atStartOfDay();
+        final LocalDateTime endDate = date.plusDays(1).atStartOfDay();
+
+
+        final JPAQuery<Tuple> query = new JPAQuery<>(entityManager)
+                .select( p.department.id, op.price, op.quantity, o.discountRate)
+                .from(op)
+                .join(op.order, o)
+                .join(op.product, p)
+                .where((o.created.goe(startDate).and(o.created.lt(endDate))));
+
+
+
+        final Map<Long, StatOrderDepartment> depMap = new LinkedHashMap<>();
+
+        query.fetch().forEach(t -> {
+            final Long departmentId = t.get(p.department.id);
+            final BigDecimal discountRate = t.get(o.discountRate);
+
+            final BigDecimal totalPrice;
+            if (discountRate == null)
+                totalPrice = t.get(op.price).multiply(new BigDecimal(t.get(op.quantity)));
+            else
+                totalPrice = t.get(op.price).multiply(new BigDecimal(t.get(op.quantity)))
+                        .multiply(ONE.subtract(discountRate.divide(ONE_HUNDRED, RoundingMode.HALF_DOWN)).setScale(2, RoundingMode.HALF_DOWN));
+
+            final StatOrderDepartment statOrderDepartment = depMap.get(departmentId);
+            if (statOrderDepartment == null) {
+                depMap.put(departmentId, new StatOrderDepartment(departmentId, totalPrice));
+            } else {
+                statOrderDepartment.setTotalAmount(statOrderDepartment.getTotalAmount().add(totalPrice));
+            }
+
+        });
+
+        return depMap.values();
+    }
+
 
     private LocalDate createLocalDate(Tuple t) {
         final QOrder o = QOrder.order;
