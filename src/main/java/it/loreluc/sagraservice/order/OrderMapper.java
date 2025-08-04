@@ -12,7 +12,6 @@ import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface OrderMapper {
-    @Mapping(target = "discountRate", ignore = true)
     @Mapping(target = "totalAmount", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "user", ignore = true)
@@ -45,7 +44,6 @@ public interface OrderMapper {
     @Mapping(target = "serviceCost", ignore = true)
     @Mapping(target = "lastUpdate", ignore = true)
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "discountRate", ignore = true)
     @Mapping(target = "created", ignore = true)
     @Mapping(target = "products", ignore = true)
     void updateEntity(@MappingTarget Order order, OrderRequest orderRequest);

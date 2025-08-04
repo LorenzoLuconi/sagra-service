@@ -535,102 +535,41 @@ public class ProductTest extends CommonTest {
     public void product_init() throws Exception {
 
         checkProductQuantity(1, 220, 200 );
-        checkProductQuantity(2, 500, 500);
-        checkProductQuantity(3, 75, 75);
-        checkProductQuantity(4, 100, 100);
-        checkProductQuantity(5, 30,30 );
-        checkProductQuantity(6, 1000, 1000);
-        checkProductQuantity(8, 100,100);
 
         final String request = """
-                [
                     {
-                       "productId": 1,
-                       "initialQuantity": 150
-                    },
-                    {
-                       "productId": 2,
-                       "initialQuantity": 160
-                    },
-                    {
-                       "productId": 3,
-                       "initialQuantity": 170
-                    },
-                    {
-                       "productId": 4,
-                       "initialQuantity": 180
-                    },
-                    {
-                       "productId": 5,
-                       "initialQuantity": 190
-                    },
-                    {
-                       "productId": 6,
-                       "initialQuantity": 200
-                    },
-                    {
-                       "productId": 8,
-                       "initialQuantity": 210
+                       "quantityVariation": 100
                     }
-                ]
                 """;
-        this.mockMvc.perform(put("/v1/products/initQuantity")
+        this.mockMvc.perform(put("/v1/products/{id}/initQuantity", 1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(request)
                 )
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message", notNullValue()))
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.initialQuantity", is(100)))
+                .andExpect(jsonPath("$.availableQuantity", is(100)))
 
         ;
 
-        checkProductQuantity(1, 150, 150 );
-        checkProductQuantity(2, 160, 160);
-        checkProductQuantity(3, 170, 170);
-        checkProductQuantity(4, 180, 180);
-        checkProductQuantity(5, 190,190);
-        checkProductQuantity(6, 200, 200);
-        checkProductQuantity(8, 210,210);
+        checkProductQuantity(1, 100, 100 );
     }
 
     @Test
     @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml","today_order.yml"}, cleanBefore = true)
     public void product_init_conflict() throws Exception {
 
+        checkProductQuantity(1, 220, 200 );
+
+
         final String request = """
-                [
                     {
-                       "productId": 1,
-                       "initialQuantity": 150
-                    },
-                    {
-                       "productId": 2,
-                       "initialQuantity": 160
-                    },
-                    {
-                       "productId": 3,
-                       "initialQuantity": 170
-                    },
-                    {
-                       "productId": 4,
-                       "initialQuantity": 180
-                    },
-                    {
-                       "productId": 5,
-                       "initialQuantity": 190
-                    },
-                    {
-                       "productId": 6,
-                       "initialQuantity": 200
-                    },
-                    {
-                       "productId": 8,
-                       "initialQuantity": 210
+                       "quantityVariation": 100
                     }
-                ]
                 """;
-        this.mockMvc.perform(put("/v1/products/initQuantity")
+        this.mockMvc.perform(put("/v1/products/{id}/initQuantity", 1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(request)
@@ -640,45 +579,23 @@ public class ProductTest extends CommonTest {
                 .andExpect(jsonPath("$.message", notNullValue()))
 
         ;
+
+        checkProductQuantity(1, 220, 200 );
     }
 
     @Test
-    @DataSet( value = {"courses.yml","departments.yml","products.yml"}, cleanBefore = true)
-    public void product_init_parent_product() throws Exception {
+    @DataSet( value = {"courses.yml","departments.yml","products.yml","users.yml","orders.yml"}, cleanBefore = true)
+    public void product_init_under_zero() throws Exception {
+
+        checkProductQuantity(1, 220, 200 );
+
 
         final String request = """
-                [
                     {
-                       "productId": 1,
-                       "initialQuantity": 150
-                    },
-                    {
-                       "productId": 2,
-                       "initialQuantity": 160
-                    },
-                    {
-                       "productId": 3,
-                       "initialQuantity": 170
-                    },
-                    {
-                       "productId": 4,
-                       "initialQuantity": 180
-                    },
-                    {
-                       "productId": 5,
-                       "initialQuantity": 190
-                    },
-                    {
-                       "productId": 6,
-                       "initialQuantity": 200
-                    },
-                    {
-                       "productId": 7,
-                       "initialQuantity": 210
+                       "quantityVariation": -10
                     }
-                ]
                 """;
-        this.mockMvc.perform(put("/v1/products/initQuantity")
+        this.mockMvc.perform(put("/v1/products/{id}/initQuantity", 1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(request)
@@ -686,7 +603,35 @@ public class ProductTest extends CommonTest {
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message", notNullValue()))
+
         ;
+
+        checkProductQuantity(1, 220, 200 );
+    }
+
+    @Test
+    @DataSet( value = {"courses.yml","departments.yml","products.yml"}, cleanBefore = true)
+    public void product_init_parent_product() throws Exception {
+
+        checkProductQuantity(7, 220, 200 );
+
+        final String request = """
+                    {
+                       "quantityVariation": 100
+                    }
+                """;
+        this.mockMvc.perform(put("/v1/products/{id}/initQuantity", 7)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(request)
+                )
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", notNullValue()))
+
+        ;
+
+        checkProductQuantity(7, 220, 200 );
     }
 
     @Test
@@ -694,46 +639,21 @@ public class ProductTest extends CommonTest {
     public void product_init_invalid_product() throws Exception {
 
         final String request = """
-                [
                     {
-                       "productId": 1,
-                       "initialQuantity": 150
-                    },
-                    {
-                       "productId": 2,
-                       "initialQuantity": 160
-                    },
-                    {
-                       "productId": 3,
-                       "initialQuantity": 170
-                    },
-                    {
-                       "productId": 4,
-                       "initialQuantity": 180
-                    },
-                    {
-                       "productId": 5,
-                       "initialQuantity": 190
-                    },
-                    {
-                       "productId": 6,
-                       "initialQuantity": 200
-                    },
-                    {
-                       "productId": 7777,
-                       "initialQuantity": 210
+                       "quantityVariation": 100
                     }
-                ]
                 """;
-        this.mockMvc.perform(put("/v1/products/initQuantity")
+        this.mockMvc.perform(put("/v1/products/{id}/initQuantity", 1111)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(request)
                 )
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message", notNullValue()))
+
         ;
+
     }
 
 

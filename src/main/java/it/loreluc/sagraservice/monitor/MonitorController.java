@@ -54,7 +54,7 @@ public class MonitorController {
     @ApiResponse(responseCode = "403", content = @Content)
     @ApiResponse(responseCode = "404", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Monitor non trovato")
     @ApiResponse(responseCode = "409", content = @Content(schema = @Schema(implementation = ErrorResource.class)), description = "Monitor con il medesimo nome già esistente")
-    public MonitorResource updateMonitor(@PathVariable("monitorId") Long id, @RequestBody @Valid MonitorResource monitorResource) {
+    public MonitorResource monitorUpdate(@PathVariable("monitorId") Long id, @RequestBody @Valid MonitorResource monitorResource) {
         return monitorMapper.toResource(monitorService.update(id, monitorResource));
     }
 

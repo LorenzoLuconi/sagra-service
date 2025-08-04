@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 
 import static it.loreluc.sagraservice.error.InvalidProduct.ProductError.LOCKED;
 import static it.loreluc.sagraservice.error.InvalidProduct.ProductError.NOT_ENOUGH_QUANTITY;
+import static java.math.BigDecimal.ONE;
 
 @Service
 @RequiredArgsConstructor
@@ -55,7 +56,7 @@ public class OrderService {
 
         validateOrderRequest(orderRequest);
         final Order order = orderMapper.toEntity(orderRequest);
-        getDiscountRate(orderRequest).ifPresent(order::setDiscountRate);
+        //getDiscountRate(orderRequest).ifPresent(order::setDiscountRate);
         order.setServiceCost(settings.getServiceCost());
 
         // FIXME manca gestione dell'utente
@@ -91,7 +92,12 @@ public class OrderService {
         validateOrderRequest(orderRequest);
 
         orderMapper.updateEntity(order, orderRequest);
-        getDiscountRate(orderRequest).ifPresent(order::setDiscountRate);
+//        final Optional<BigDecimal> discountRateOptional = getDiscountRate(orderRequest);
+//        if  (discountRateOptional.isPresent()) {
+//            order.setDiscountRate(discountRateOptional.get());
+//        } else {
+//            order.setDiscountRate(null);
+//        }
 
         final Map<Long, OrderProduct> orderedProductsMap = order.getProducts().stream()
                 .collect(Collectors.toMap(o -> o.getProduct().getId(), Function.identity()));
@@ -274,20 +280,20 @@ public class OrderService {
         return orderProduct;
     }
 
-    private Optional<BigDecimal> getDiscountRate(OrderRequest orderRequest) {
-        if ( orderRequest.getDiscountId() != null ) {
-            try {
-                final Discount discount = discountService.findById(orderRequest.getDiscountId());
-                return Optional.of(discount.getRate());
-            } catch (SagraNotFoundException e) {
-                throw new SagraBadRequestException(
-                        InvalidValue.builder().field("discountId").value(orderRequest.getDiscountId()).message("Codice sconto non trovato").build()
-                );
-            }
-        }
-
-        return Optional.empty();
-    }
+//    private Optional<BigDecimal> getDiscountRate(OrderRequest orderRequest) {
+//        if ( orderRequest.getDiscountId() != null ) {
+//            try {
+//                final Discount discount = discountService.findById(orderRequest.getDiscountId());
+//                return Optional.of(discount.getRate());
+//            } catch (SagraNotFoundException e) {
+//                throw new SagraBadRequestException(
+//                        InvalidValue.builder().field("discountId").value(orderRequest.getDiscountId()).message("Codice sconto non trovato").build()
+//                );
+//            }
+//        }
+//
+//        return Optional.empty();
+//    }
 
     public Map<LocalDate, StatOrder> ordersStats(LocalDate date) {
         final QOrder o = QOrder.order;
@@ -322,7 +328,7 @@ public class OrderService {
         return prodMap;
     }
 
-    public List<StatOrderProduct> orderedProductsStats(LocalDate date) {
+    public Collection<StatOrderProduct> orderedProductsStats(LocalDate date) {
         final QOrder o = QOrder.order;
         final QOrderProduct op = QOrderProduct.orderProduct;
 
@@ -332,21 +338,47 @@ public class OrderService {
 
         final JPAQuery<Tuple> query = new JPAQuery<>(entityManager)
                 .select(o.created.year(), o.created.month(), o.created.dayOfMonth(),
-                        op.product.id, op.price.sumBigDecimal(), Wildcard.count)
+                        op.product.id, op.product.parentId, op.price, o.discountRate, op.quantity.sumLong())
                 .from(op)
                 .join(op.order, o)
                 .where((o.created.goe(startDate).and(o.created.lt(endDate))))
-                .orderBy(o.created.year().asc(), o.created.month().asc(), o.created.dayOfMonth().asc(), Wildcard.count.desc())
-                .groupBy(o.created.year(), o.created.month(), o.created.dayOfMonth(), op.product.id);
+                .orderBy(o.created.year().asc(), o.created.month().asc(), o.created.dayOfMonth().asc())
+                .groupBy(o.created.year(), o.created.month(), o.created.dayOfMonth(), op.product.id, op.product.parentId, op.price, o.discountRate);
 
-        return query.fetch().stream().map(t -> {
-            final StatOrderProduct result = new StatOrderProduct();
-            result.setTotalAmount(t.get(op.price.sumBigDecimal()));
-            result.setCount(t.get(Wildcard.count));
-            result.setProductId(t.get(op.product.id));
-            return result;
 
-        }).toList();
+        final Map<Long, StatOrderProduct> prodMap = new LinkedHashMap<>();
+        query.fetch().forEach(t -> {
+            final Long parentId = t.get(op.product.parentId);
+            final Long productId = t.get(op.product.id);
+            final Long key = parentId == null ? productId : parentId;
+
+            final StatOrderProduct statOrderProduct = prodMap.get(key);
+
+            final BigDecimal discountRate = t.get(o.discountRate);
+
+            final BigDecimal totalPrice;
+            if ( discountRate == null )
+                totalPrice = t.get(op.price).multiply(new BigDecimal(t.get(op.quantity.sumLong())));
+            else
+                totalPrice = t.get(op.price).multiply(new BigDecimal(t.get(op.quantity.sumLong())))
+                        .multiply( ONE.subtract(discountRate.divide(ONE_HUNDRED, RoundingMode.HALF_DOWN)).setScale(2, RoundingMode.HALF_DOWN));
+
+
+            if ( statOrderProduct == null ) {
+                final StatOrderProduct result = new StatOrderProduct();
+                result.setTotalAmount(totalPrice);
+                result.setTotalQuantity(t.get(op.quantity.sumLong()));
+                result.setProductId(key);
+
+                prodMap.put(key, result);
+            } else {
+                statOrderProduct.setTotalQuantity(statOrderProduct.getTotalQuantity() + t.get(op.quantity.sumLong()));
+                statOrderProduct.setTotalAmount(statOrderProduct.getTotalAmount().add(totalPrice));
+            }
+
+        });
+
+        return prodMap.values();
         
     }
 
