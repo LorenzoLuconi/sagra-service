@@ -2,6 +2,7 @@ package it.loreluc.sagraservice.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -25,6 +26,7 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((requests) -> requests
+                        .requestMatchers(HttpMethod.OPTIONS).permitAll()
                         .requestMatchers("/auth/token").permitAll()
                         .requestMatchers("/v1/monitors/{monitorId}/view").permitAll()
                         .anyRequest().authenticated()
