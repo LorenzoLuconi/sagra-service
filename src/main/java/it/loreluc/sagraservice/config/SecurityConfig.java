@@ -35,8 +35,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers(HttpMethod.OPTIONS).permitAll()
-                        .requestMatchers("/auth/token").permitAll()
-                        .requestMatchers("/v1/monitors/{monitorId}/view").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/token").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/v3/api-docs", "/v3/api-docs/*","/swagger-ui/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/monitors/{monitorId}/view").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
