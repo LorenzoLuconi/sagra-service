@@ -32,7 +32,11 @@ public class JwtTokenService {
                 .issuedAt(now)
                 .expiresAt(now.plus(sagraSettings.getTokenExpire(), ChronoUnit.MINUTES))
                 .subject(authentication.getName())
-                .claim("authorities", authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
+                .claim("roles", authentication.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .filter( a -> a.startsWith("ROLE_"))
+                        .map( a -> a.replaceFirst("ROLE_", "").toLowerCase()).toList()
+                )
                 .build();
 
         final JwtEncoderParameters encoderParameters = JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(), claims);
