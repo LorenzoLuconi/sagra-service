@@ -11,7 +11,7 @@ import it.loreluc.sagraservice.error.*;
 import it.loreluc.sagraservice.jpa.*;
 import it.loreluc.sagraservice.order.resource.*;
 import it.loreluc.sagraservice.product.ProductService;
-import it.loreluc.sagraservice.security.UsersRepository;
+import it.loreluc.sagraservice.user.UsersRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

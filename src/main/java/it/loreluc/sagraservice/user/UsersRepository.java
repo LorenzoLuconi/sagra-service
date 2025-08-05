@@ -1,4 +1,4 @@
-package it.loreluc.sagraservice.security;
+package it.loreluc.sagraservice.user;
 
 import it.loreluc.sagraservice.jpa.User;
 import org.springframework.data.repository.CrudRepository;

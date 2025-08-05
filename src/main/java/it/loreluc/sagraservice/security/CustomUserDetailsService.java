@@ -1,6 +1,7 @@
 package it.loreluc.sagraservice.security;
 
 import it.loreluc.sagraservice.jpa.User;
+import it.loreluc.sagraservice.user.UsersRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
