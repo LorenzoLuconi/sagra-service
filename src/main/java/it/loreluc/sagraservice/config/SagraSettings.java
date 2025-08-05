@@ -22,5 +22,5 @@ public class SagraSettings {
      * Duranta in minuti del token
      */
     @NotNull @Min(0)
-    private Long tokenExpire;
+    private Integer tokenExpire;
 }
