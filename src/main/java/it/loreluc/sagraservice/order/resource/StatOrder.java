@@ -18,6 +18,13 @@ public class StatOrder {
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Numero di ordini registrati")
     private Long count;
 
+    @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED, description = "Statistiche sugli ordini da asporto, solo se presenti")
+    private StatOrderTakeAway takeAway;
+
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Dettagli dei prodotti ordinati")
     private Collection<StatOrderProduct> products;
+
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Statistiche sui reparti")
+    private Collection<StatOrderDepartment> departments;
+
 }
