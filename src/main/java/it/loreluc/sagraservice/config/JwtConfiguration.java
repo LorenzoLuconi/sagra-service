@@ -5,10 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.jwt.*;
 
 import javax.crypto.spec.SecretKeySpec;
 
@@ -17,6 +14,9 @@ public class JwtConfiguration {
 
     @Value("${sagra-service.jwt.key}")
     private String jwtKey;
+
+    @Value("${spring.application.name}")
+    private String issuer;
 
     @Bean
     public JwtEncoder jwtEncoder() {
@@ -27,8 +27,12 @@ public class JwtConfiguration {
     public JwtDecoder jwtDecoder() {
         byte[] bytes = jwtKey.getBytes();
         final SecretKeySpec originalKey = new SecretKeySpec(bytes, 0, bytes.length,"RSA");
-        return NimbusJwtDecoder.withSecretKey(originalKey)
+        final NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withSecretKey(originalKey)
                 .macAlgorithm(MacAlgorithm.HS256)
                 .build();
+
+        jwtDecoder.setJwtValidator(JwtValidators.createDefaultWithValidators(new JwtIssuerValidator(issuer)));
+
+        return jwtDecoder;
     }
 }

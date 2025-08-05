@@ -1,6 +1,8 @@
 package it.loreluc.sagraservice.security;
 
+import it.loreluc.sagraservice.config.SagraSettings;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -17,13 +19,18 @@ public class JwtTokenService {
     private final JwtEncoder encoder;
     private final JwtDecoder decoder;
 
+    private final SagraSettings sagraSettings;
+    @Value("${spring.application.name}")
+    private String issuer;
+
+
     public String generateToken(Authentication authentication) {
         final Instant now = Instant.now();
 
         final JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("self")
+                .issuer(issuer)
                 .issuedAt(now)
-                .expiresAt(now.plus(1, ChronoUnit.HOURS))
+                .expiresAt(now.plus(sagraSettings.getTokenExpire(), ChronoUnit.MINUTES))
                 .subject(authentication.getName())
                 .claim("authorities", authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
                 .build();

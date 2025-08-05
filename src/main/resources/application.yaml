@@ -1,6 +1,6 @@
 spring:
   application:
-    name: @project.name@
+    name: "sagra-service"
   liquibase:
     change-log: classpath:/db/changelog/liquibase-changelog.xml
   profiles:
@@ -22,6 +22,7 @@ sagra-service:
       - '*'
     max-age: 86400
   service-cost: 0.5
+  token-expire: 180
 
 ---
 spring:

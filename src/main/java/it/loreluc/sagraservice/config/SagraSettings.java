@@ -17,4 +17,10 @@ public class SagraSettings {
     @NotNull
     @Min(0) // In teoria dovrebbe essere legato all'evento che non esiste ancora
     private BigDecimal serviceCost;
+
+    /**
+     * Duranta in minuti del token
+     */
+    @NotNull @Min(0)
+    private Long tokenExpire;
 }
