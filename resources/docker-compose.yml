@@ -55,10 +55,10 @@ services:
       - sh
       - -c
       - |
-        until mysql -hmysql -usagra -psagra -D sagra -Nse "select 1 from information_schema.tables where table_schema='sagra' and table_name='users'" | grep -q 1; do
+        until mysql --default-character-set=utf8mb4 -hmysql -usagra -psagra -D sagra -Nse "select 1 from information_schema.tables where table_schema='sagra' and table_name='users'" | grep -q 1; do
           sleep 2
         done
-        mysql -hmysql -usagra -psagra -D sagra < /seed/data-test.sql
+        mysql --default-character-set=utf8mb4 -hmysql -usagra -psagra -D sagra < /seed/data-test.sql
 
 volumes:
   mysql-data:

@@ -1,6 +1,6 @@
 -- password lorenzo in bcrypt
 insert into users (username, password, name, role, created, last_update) VALUES
-('lorenzo', '$2a$10$CQViJR5.yIcVJzfeGPMRMeeb9aZbUOCga.MJhbKVaq1ooxIdrF4mm', 'Lorenzo', 'admin', now(), now());
+('lorenzo', '$2a$10$CQViJR5.yIcVJzfeGPMRMeeb9aZbUOCga.MJhbKVaq1ooxIdrF4mm', 'Lorenzo', 'cashier', now(), now());
 
 insert into courses values (1, 'Primi');
 insert into courses values (2, 'Secondi');
