@@ -200,4 +200,19 @@
 
 
     </changeSet>
+
+    <changeSet id="2-users-auth" author="Codex">
+        <modifyDataType tableName="users" columnName="role" newDataType="varchar(16)"/>
+
+        <addColumn tableName="users">
+            <column name="name" type="varchar(64)" defaultValue="Administrator">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <update tableName="users">
+            <column name="role" value="cashier"/>
+            <where>role = 'user'</where>
+        </update>
+    </changeSet>
 </databaseChangeLog>

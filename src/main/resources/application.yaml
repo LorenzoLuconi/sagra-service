@@ -11,6 +11,15 @@ spring:
     log-resolved-exception: false
   jpa:
     open-in-view: false
+  servlet:
+    multipart:
+      enabled: false
+server:
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        same-site: lax
 sagra-service:
   cors:
     allowed-methods:
@@ -21,7 +30,12 @@ sagra-service:
     allowed-origins:
       - http://localhost:3000
     max-age: 86400
+    allow-credentials: true
   service-cost: 0.5
+  default-admin:
+    username: admin
+    name: Administrator
+    #password: admin1234
 
 ---
 spring:
@@ -49,3 +63,8 @@ spring:
   sql:
     init:
       mode: never
+sagra-service:
+  default-admin:
+    username: admin
+    name: Administrator
+    password: admin1234

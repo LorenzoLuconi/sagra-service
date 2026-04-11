@@ -27,6 +27,9 @@ public class MvcConfiguration implements WebMvcConfigurer {
 
         if (cors.getAllowedOrigins() != null)
             corsRegistration.allowedOriginPatterns(cors.getAllowedOrigins());
+
+        if (cors.getAllowCredentials() != null)
+            corsRegistration.allowCredentials(cors.getAllowCredentials());
     }
 
 //    @Override

@@ -16,4 +16,6 @@ public class CorsSettings {
     private String[] allowedMethods;
 
     private Long maxAge;
+
+    private Boolean allowCredentials;
 }

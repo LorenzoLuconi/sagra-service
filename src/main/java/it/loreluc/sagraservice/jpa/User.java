@@ -33,6 +33,10 @@ public class User implements UserDetails {
     @NotEmpty
     private String password;
 
+    @NotEmpty
+    @Length(max = 64)
+    private String name;
+
     @NotNull
     @Enumerated(EnumType.STRING)
     private Role role;
@@ -49,25 +53,5 @@ public class User implements UserDetails {
             return Collections.singleton(new SimpleGrantedAuthority("ROLE_" + role.name().toUpperCase()));
         }
         return Collections.emptySet();
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
     }
 }

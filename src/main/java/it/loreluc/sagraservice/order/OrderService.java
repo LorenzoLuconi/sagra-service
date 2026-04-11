@@ -49,15 +49,12 @@ public class OrderService {
     }
 
     @Transactional(rollbackFor = Throwable.class)
-    public Order createOrder(OrderRequest orderRequest) {
+    public Order createOrder(OrderRequest orderRequest, String username) {
 
         validateOrderRequest(orderRequest);
         final Order order = orderMapper.toEntity(orderRequest);
-        //getDiscountRate(orderRequest).ifPresent(order::setDiscountRate);
         order.setServiceCost(settings.getServiceCost());
-
-        // FIXME manca gestione dell'utente
-        order.setUser(usersRepository.findById("lorenzo").orElseThrow(() -> new RuntimeException("User not found")));
+        order.setUser(usersRepository.findById(username).orElseThrow(() -> new RuntimeException("User not found: " + username)));
 
         int idx = 0;
         for (OrderProductRequest orderProductRequest : orderRequest.getProducts()) {

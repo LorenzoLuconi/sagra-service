@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -45,8 +46,8 @@ public class OrderController {
     @ApiResponse(responseCode = "401", content = @Content)
     @ApiResponse(responseCode = "403", content = @Content)
     @ApiResponse(responseCode = "450", content = @Content(schema = @Schema(implementation = ErrorResourceNotEnoughQuantity.class)), description = "Alcuni prodotti sono bloccati alla vendita o quantità insufficiente")
-    public OrderResponse orderCreate(@RequestBody @Valid OrderRequest orderRequest) {
-        return orderMapper.toResponse(orderService.createOrder(orderRequest));
+    public OrderResponse orderCreate(@RequestBody @Valid OrderRequest orderRequest, Authentication authentication) {
+        return orderMapper.toResponse(orderService.createOrder(orderRequest, authentication.getName()));
     }
 
     @GetMapping
