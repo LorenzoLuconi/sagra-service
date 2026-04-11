@@ -267,7 +267,7 @@ public class OrderService {
         orderProduct.setProductId(product.getId());
         orderProduct.setPrice(product.getPrice());
         orderProduct.setQuantity(orderProductRequest.getQuantity());
-        orderProduct.setNote(orderProduct.getNote());
+        orderProduct.setNote(orderProductRequest.getNote());
         orderProduct.setIdx(idx);
         order.getProducts().add(idx, orderProduct);
 
