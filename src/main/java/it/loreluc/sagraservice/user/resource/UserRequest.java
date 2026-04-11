@@ -13,7 +13,7 @@ public class UserRequest {
 
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank
-    @Length(max = 16)
+    @Length(min = 6, max = 16)
     private String username;
 
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
