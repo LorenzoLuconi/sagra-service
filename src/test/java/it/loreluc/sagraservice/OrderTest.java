@@ -69,7 +69,6 @@ public class OrderTest extends CommonTest {
                    "takeAway": false,
                    "note": "Allergico" ,
                    "serviceNumber": 3,
-                   "username": "lorenzo",
                    "products": [
                      {
                        "productId": 2,
@@ -153,7 +152,6 @@ public class OrderTest extends CommonTest {
                    "takeAway": false,
                    "note": "Allergico" ,
                    "serviceNumber": 3,
-                   "username": "lorenzo",
                    "discountRate": 100,
                    "products": [
                      {
@@ -236,7 +234,6 @@ public class OrderTest extends CommonTest {
                    "takeAway": false,
                    "note": "Allergico" ,
                    "serviceNumber": 3,
-                   "username": "lorenzo",
                    "products": [
                      {
                        "productId": 2,
@@ -277,7 +274,6 @@ public class OrderTest extends CommonTest {
                    "takeAway": false,
                    "note": "Allergico" ,
                    "serviceNumber": 3,
-                   "username": "lorenzo",
                    "products": [
                      {
                        "productId": 2,
@@ -317,7 +313,6 @@ public class OrderTest extends CommonTest {
                    "takeAway": false,
                    "note": "Allergico",
                    "serviceNumber": 3,
-                   "username": "lorenzo",
                    "products": [
                      {
                        "productId": 2,
@@ -350,7 +345,6 @@ public class OrderTest extends CommonTest {
                    "takeAway": false,
                    "note": "Allergico",
                    "serviceNumber": 3,
-                   "username": "lorenzo",
                    "products": [
                      {
                        "productId": 2,
@@ -383,7 +377,6 @@ public class OrderTest extends CommonTest {
                    "takeAway": false,
                    "note": "Allergico",
                    "serviceNumber": 0,
-                   "username": "lorenzo",
                    "products": [
                      {
                        "productId": 2,
@@ -419,7 +412,7 @@ public class OrderTest extends CommonTest {
                    "takeAway": true,
                    "serviceNumber": 0,
                    "note": "Allergico",
-                   "username": "lorenzo",
+                   
                    "products": [
                      {
                        "productId": 2,
@@ -468,7 +461,7 @@ public class OrderTest extends CommonTest {
                    "takeAway": true,
                    "serviceNumber": 2,
                    "note": "Allergico",
-                   "username": "lorenzo",
+                   
                    "products": [
                      {
                        "productId": 2,
@@ -503,7 +496,7 @@ public class OrderTest extends CommonTest {
                    "takeAway": false,
                    "note": "Allergico",
                    "serviceNumber": 3,
-                   "username": "lorenzo",
+                   
                    "products": [
                      {
                        "productId": 2,
@@ -540,7 +533,7 @@ public class OrderTest extends CommonTest {
                    "takeAway": false,
                    "note": "Allergico",
                    "serviceNumber": 3,
-                   "username": "lorenzo",
+                   
                    "products": [
                      {
                        "productId": 2222,
@@ -577,7 +570,7 @@ public class OrderTest extends CommonTest {
                    "takeAway": false,
                    "note": "Allergico",
                    "serviceNumber": 3,
-                   "username": "lorenzo",
+                   
                    "products": [
                      {
                        "productId": 2,
@@ -665,7 +658,7 @@ public class OrderTest extends CommonTest {
                       "customer": "Carlo Azeglio Ciampi",
                       "takeAway": false,
                       "serviceNumber": 6,
-                      "username": "lorenzo",
+                      
                       "products": [
                           {
                               "productId": 2,
@@ -728,7 +721,6 @@ public class OrderTest extends CommonTest {
                       "takeAway": false,
                       "serviceNumber": 6,
                       "discountRate": 30,
-                      "username": "lorenzo",
                       "products": [
                           {
                               "productId": 2,
@@ -834,7 +826,6 @@ public class OrderTest extends CommonTest {
                       "customer": "Lorenzo Luconi",
                       "takeAway": false,
                       "serviceNumber": 4,
-                      "username": "lorenzo",
                       "products": [
                           {
                               "productId": 2,
@@ -900,7 +891,6 @@ public class OrderTest extends CommonTest {
                       "customer": "Lorenzo Luconi",
                       "takeAway": false,
                       "serviceNumber": 6,
-                      "username": "lorenzo",
                       "products": [
                           {
                               "productId": 2,
@@ -981,7 +971,6 @@ public class OrderTest extends CommonTest {
                       "customer": "Lorenzo Luconi",
                       "takeAway": false,
                       "serviceNumber": 6,
-                      "username": "lorenzo",
                       "products": [
                           {
                                "productId": 2,
@@ -1084,7 +1073,6 @@ public class OrderTest extends CommonTest {
                       "customer": "Lorenzo Luconi",
                       "takeAway": false,
                       "serviceNumber": 6,
-                      "username": "lorenzo",
                       "products": [
                         {
                             "productId": 2,
@@ -1270,7 +1258,6 @@ public class OrderTest extends CommonTest {
                       "customer": "Lorenzo Luconi",
                       "takeAway": false,
                       "serviceNumber": 6,
-                      "username": "lorenzo",
                       "products": [
                           {
                               "productId": 2,
@@ -1327,7 +1314,6 @@ public class OrderTest extends CommonTest {
                       "customer": "Lorenzo Luconi",
                       "takeAway": true,
                       "serviceNumber": 0,
-                      "username": "lorenzo",
                       "products": [
                           {
                               "productId": 2,
@@ -1377,7 +1363,6 @@ public class OrderTest extends CommonTest {
                       "customer": "Lorenzo Luconi",
                       "takeAway": true,
                       "serviceNumber": 6,
-                      "username": "lorenzo",
                       "products": [
                           {
                               "productId": 2,
@@ -1604,7 +1589,7 @@ public class OrderTest extends CommonTest {
                       "takeAway": false,
                       "note": "test",
                       "serviceNumber": 7,
-                      "username": "lorenzo",
+                      
                       "products": [
                           {
                               "productId": 2,
