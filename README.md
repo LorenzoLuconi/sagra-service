@@ -7,13 +7,17 @@ Richiede:
  - Java 21
  - MySQL
 
-Esecuzione in test:
+Avvio applicazione per test:
 
 ```
-./mvnw spring-boot:run -DskipTests
+cd resources
+docker compose up -d 
 ```
 
-Questo crea un servizio sulla porta 8080 con database in memoria H2.
+Questo crea un servizio accessibile tramitel la porta 8080 con database MySQL già con dei dati dentro, con due utenti già presenti:
+
+- admin / admin con ruolo amministratore
+- lorenzo / lorenzo con ruolo cassiere
 
 E' disponibile documentazione OpenAPI e Swagger all'indirizzo:
 http://localhost:8080/swagger-ui/index.html
@@ -107,7 +111,8 @@ E' importante sottolineare che gli ordini sono memorizzati solo se non ci sono e
 *TODO*
 
 ### Autenticazione
-Anche se è già prevista una tabella degli utente, l'autenticazione non è ancora attiva
+E' prevista autenticazione tramite sessions (utilizzando endpoint /v1/auth/login e /v1/auth/logout).
+
 
 *TODO*
 
