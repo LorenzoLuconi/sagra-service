@@ -113,6 +113,9 @@ E' importante sottolineare che gli ordini sono memorizzati solo se non ci sono e
 ### Autenticazione
 E' prevista autenticazione tramite sessions (utilizzando endpoint /v1/auth/login e /v1/auth/logout).
 
+## Licenza
+Questo progetto è distribuito sotto licenza [GNU Affero General Public License v3.0 (AGPL-3.0)](LICENSE).
+
 
 *TODO*
 
