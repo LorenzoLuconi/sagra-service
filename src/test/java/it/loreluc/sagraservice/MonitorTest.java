@@ -3,12 +3,12 @@ package it.loreluc.sagraservice;
 import com.github.database.rider.core.api.dataset.DataSet;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 public class MonitorTest extends CommonTest {
 
@@ -227,5 +227,25 @@ public class MonitorTest extends CommonTest {
                 .andExpect(jsonPath("$.products[2].initialQuantity", is(75)))
                 .andExpect(jsonPath("$.products[2].availableQuantity", is(75)))
         ;
+    }
+
+    @Test
+    @WithAnonymousUser
+    @DataSet( value = {"courses.yml","departments.yml","products.yml","monitors.yml"}, cleanBefore = true)
+    public void monitor_html_view_is_accessible_without_authentication() throws Exception {
+        this.mockMvc.perform(get("/monitors/{id}", 1).accept(MediaType.TEXT_HTML))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(view().name("monitor"));
+    }
+
+    @Test
+    @WithAnonymousUser
+    @DataSet( value = {"courses.yml","departments.yml","products.yml","monitors.yml"}, cleanBefore = true)
+    public void monitor_api_view_is_accessible_without_authentication() throws Exception {
+        this.mockMvc.perform(get("/v1/monitors/{id}/view", 1).accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name", is("Cucina")));
     }
 }

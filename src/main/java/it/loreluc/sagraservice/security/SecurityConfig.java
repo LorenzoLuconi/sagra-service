@@ -38,8 +38,9 @@ public class SecurityConfig {
                 .logout(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/error", "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**", "/monitors/**").permitAll()
+                        .requestMatchers("/error", "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/monitors/{monitorId}/view","/monitors/**").permitAll()
                         .requestMatchers("/v1/users/**").hasRole("ADMIN")
                         .requestMatchers("/v1/auth/**").authenticated()
                         .anyRequest().authenticated()
