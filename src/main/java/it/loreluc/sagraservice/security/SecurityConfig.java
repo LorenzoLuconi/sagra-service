@@ -42,6 +42,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/v1/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/monitors/{monitorId}/view","/monitors/**").permitAll()
                         .requestMatchers("/v1/users/**").hasRole("ADMIN")
+                        .requestMatchers("/v1/configurations/**").hasRole("ADMIN")
                         .requestMatchers("/v1/auth/**").authenticated()
                         .anyRequest().authenticated()
                 )

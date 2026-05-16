@@ -1,0 +1,49 @@
+app_configurations:
+  - id: 1
+    group_name: general
+    config_key: name
+    config_value: Sagra
+  - id: 2
+    group_name: general
+    config_key: date-start
+    config_value: null
+  - id: 3
+    group_name: general
+    config_key: date-end
+    config_value: null
+  - id: 4
+    group_name: general
+    config_key: logo-svg
+    config_value: null
+  - id: 5
+    group_name: print
+    config_key: group-by
+    config_value: none
+  - id: 6
+    group_name: print
+    config_key: format
+    config_value: A4
+  - id: 7
+    group_name: print
+    config_key: customer-copy
+    config_value: "true"
+  - id: 8
+    group_name: order
+    config_key: name-mandatory
+    config_value: "true"
+  - id: 9
+    group_name: order
+    config_key: take-away-available
+    config_value: "true"
+  - id: 10
+    group_name: order
+    config_key: service-enabled
+    config_value: "true"
+  - id: 11
+    group_name: order
+    config_key: service-cost
+    config_value: "1.0"
+  - id: 12
+    group_name: order
+    config_key: payment-credit-card
+    config_value: "false"

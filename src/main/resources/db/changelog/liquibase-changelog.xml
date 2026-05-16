@@ -215,4 +215,105 @@
             <where>role = 'user'</where>
         </update>
     </changeSet>
+
+    <changeSet id="3-app-configurations" author="Codex">
+        <createTable tableName="app_configurations">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+
+            <column name="group_name" type="varchar(64)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="config_key" type="varchar(64)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="config_value" type="varchar(1024)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="default_value" type="varchar(1024)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addUniqueConstraint tableName="app_configurations"
+                             columnNames="group_name, config_key"
+                             constraintName="uk_app_configurations_group_key"/>
+    </changeSet>
+
+    <changeSet id="4-app-configurations-metadata-in-code" author="Codex">
+        <modifyDataType tableName="app_configurations" columnName="config_value" newDataType="longtext"/>
+
+        <dropNotNullConstraint tableName="app_configurations" columnName="config_value" columnDataType="longtext"/>
+
+        <dropColumn tableName="app_configurations" columnName="default_value"/>
+    </changeSet>
+
+    <changeSet id="5-app-configurations-initial-values" author="Codex">
+        <insert tableName="app_configurations">
+            <column name="group_name" value="general"/>
+            <column name="config_key" value="name"/>
+            <column name="config_value" value="Sagra"/>
+        </insert>
+        <insert tableName="app_configurations">
+            <column name="group_name" value="general"/>
+            <column name="config_key" value="date-start"/>
+            <column name="config_value" valueComputed="NULL"/>
+        </insert>
+        <insert tableName="app_configurations">
+            <column name="group_name" value="general"/>
+            <column name="config_key" value="date-end"/>
+            <column name="config_value" valueComputed="NULL"/>
+        </insert>
+        <insert tableName="app_configurations">
+            <column name="group_name" value="general"/>
+            <column name="config_key" value="logo-svg"/>
+            <column name="config_value" valueComputed="NULL"/>
+        </insert>
+
+        <insert tableName="app_configurations">
+            <column name="group_name" value="print"/>
+            <column name="config_key" value="group-by"/>
+            <column name="config_value" value="none"/>
+        </insert>
+        <insert tableName="app_configurations">
+            <column name="group_name" value="print"/>
+            <column name="config_key" value="format"/>
+            <column name="config_value" value="A4"/>
+        </insert>
+        <insert tableName="app_configurations">
+            <column name="group_name" value="print"/>
+            <column name="config_key" value="customer-copy"/>
+            <column name="config_value" value="true"/>
+        </insert>
+
+        <insert tableName="app_configurations">
+            <column name="group_name" value="order"/>
+            <column name="config_key" value="name-mandatory"/>
+            <column name="config_value" value="true"/>
+        </insert>
+        <insert tableName="app_configurations">
+            <column name="group_name" value="order"/>
+            <column name="config_key" value="take-away-available"/>
+            <column name="config_value" value="true"/>
+        </insert>
+        <insert tableName="app_configurations">
+            <column name="group_name" value="order"/>
+            <column name="config_key" value="service-enabled"/>
+            <column name="config_value" value="true"/>
+        </insert>
+        <insert tableName="app_configurations">
+            <column name="group_name" value="order"/>
+            <column name="config_key" value="service-cost"/>
+            <column name="config_value" value="1.0"/>
+        </insert>
+        <insert tableName="app_configurations">
+            <column name="group_name" value="order"/>
+            <column name="config_key" value="payment-credit-card"/>
+            <column name="config_value" value="false"/>
+        </insert>
+    </changeSet>
 </databaseChangeLog>
