@@ -1,7 +1,7 @@
 app_configurations:
   - id: 1
     group_name: general
-    config_key: name
+    config_key: event-title
     config_value: Sagra
   - id: 2
     group_name: general
@@ -14,7 +14,7 @@ app_configurations:
   - id: 4
     group_name: general
     config_key: logo-svg
-    config_value: null
+    config_value: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"></svg>
   - id: 5
     group_name: print
     config_key: split-by

@@ -19,5 +19,8 @@ public class AppConfigurationValueResource {
     private AppConfigurationType type;
 
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
+    private boolean required;
+
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
     private List<String> allowedValues;
 }

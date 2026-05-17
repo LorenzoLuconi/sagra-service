@@ -19,6 +19,7 @@ public class AppConfigurationMapper {
         resource.setKey(appConfiguration.getKey());
         resource.setValue(appConfiguration.getValue());
         resource.setType(definition.getType());
+        resource.setRequired(definition.isRequired());
         resource.setAllowedValues(definition.getAllowedValues());
         return resource;
     }

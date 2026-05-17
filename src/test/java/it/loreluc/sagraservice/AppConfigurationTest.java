@@ -5,8 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -20,30 +19,30 @@ public class AppConfigurationTest extends CommonTest {
         this.mockMvc.perform(get("/v1/configurations").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
-                .andExpect(jsonPath("$[0].group", is("general")))
-                .andExpect(jsonPath("$[0].keys", hasSize(4)))
-                .andExpect(jsonPath("$[0].keys[0].key", is("date-end")))
-                .andExpect(jsonPath("$[0].keys[0].type", is("DATE")))
-                .andExpect(jsonPath("$[0].keys[2].key", is("logo-svg")))
-                .andExpect(jsonPath("$[0].keys[2].type", is("STRING")))
-                .andExpect(jsonPath("$[1].group", is("order")))
-                .andExpect(jsonPath("$[2].group", is("print")));
+                .andExpect(jsonPath("$[*].group", containsInAnyOrder("general", "order", "print")))
+                .andExpect(jsonPath("$[?(@.group == 'general')].keys[*]", hasSize(4)))
+                .andExpect(jsonPath("$[?(@.group == 'general')].keys[?(@.key == 'date-end')].type", contains("DATE")))
+                .andExpect(jsonPath("$[?(@.group == 'general')].keys[?(@.key == 'date-end')].required", contains(false)))
+                .andExpect(jsonPath("$[?(@.group == 'general')].keys[?(@.key == 'logo-svg')].type", contains("STRING")))
+                .andExpect(jsonPath("$[?(@.group == 'general')].keys[?(@.key == 'logo-svg')].required", contains(true)));
 
         this.mockMvc.perform(get("/v1/configurations/general").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.group", is("general")))
                 .andExpect(jsonPath("$.keys", hasSize(4)));
 
-        this.mockMvc.perform(get("/v1/configurations/general/name").accept(MediaType.APPLICATION_JSON))
+        this.mockMvc.perform(get("/v1/configurations/general/event-title").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.key", is("name")))
+                .andExpect(jsonPath("$.key", is("event-title")))
                 .andExpect(jsonPath("$.value", is("Sagra")))
                 .andExpect(jsonPath("$.type", is("STRING")))
+                .andExpect(jsonPath("$.required", is(true)))
                 .andExpect(jsonPath("$.allowedValues", hasSize(0)));
 
         this.mockMvc.perform(get("/v1/configurations/print/split-by").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.key", is("split-by")))
+                .andExpect(jsonPath("$.required", is(true)))
                 .andExpect(jsonPath("$.allowedValues", hasSize(3)))
                 .andExpect(jsonPath("$.allowedValues[0]", is("none")))
                 .andExpect(jsonPath("$.allowedValues[1]", is("course")))
@@ -53,7 +52,7 @@ public class AppConfigurationTest extends CommonTest {
     @Test
     @DataSet(value = {"users.yml", "app_configurations.yml"}, cleanBefore = true)
     public void admin_can_update_configuration_value() throws Exception {
-        this.mockMvc.perform(put("/v1/configurations/general/name")
+        this.mockMvc.perform(put("/v1/configurations/general/event-title")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("""
@@ -62,7 +61,7 @@ public class AppConfigurationTest extends CommonTest {
                                 }
                                 """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.key", is("name")))
+                .andExpect(jsonPath("$.key", is("event-title")))
                 .andExpect(jsonPath("$.value", is("Sagra 2026")));
     }
 
@@ -75,17 +74,15 @@ public class AppConfigurationTest extends CommonTest {
                         .content("""
                                 {
                                   "keys": [
-                                    { "key": "name", "value": "Sagra 2026" },
+                                    { "key": "event-title", "value": "Sagra 2026" },
                                     { "key": "date-start", "value": "2026-06-01" }
                                   ]
                                 }
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.group", is("general")))
-                .andExpect(jsonPath("$.keys[1].key", is("date-start")))
-                .andExpect(jsonPath("$.keys[1].value", is("2026-06-01")))
-                .andExpect(jsonPath("$.keys[3].key", is("name")))
-                .andExpect(jsonPath("$.keys[3].value", is("Sagra 2026")));
+                .andExpect(jsonPath("$.keys[?(@.key == 'date-start')].value", contains("2026-06-01")))
+                .andExpect(jsonPath("$.keys[?(@.key == 'event-title')].value", contains("Sagra 2026")));
     }
 
     @Test
@@ -100,7 +97,7 @@ public class AppConfigurationTest extends CommonTest {
                                     {
                                       "group": "general",
                                       "keys": [
-                                        { "key": "name", "value": "Sagra 2026" }
+                                        { "key": "event-title", "value": "Sagra 2026" }
                                       ]
                                     },
                                     {
@@ -113,15 +110,14 @@ public class AppConfigurationTest extends CommonTest {
                                 }
                                 """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].group", is("general")))
-                .andExpect(jsonPath("$[0].keys[3].value", is("Sagra 2026")))
-                .andExpect(jsonPath("$[1].group", is("order")))
-                .andExpect(jsonPath("$[1].keys[3].value", is("false")));
+                .andExpect(jsonPath("$[*].group", containsInAnyOrder("general", "order", "print")))
+                .andExpect(jsonPath("$[?(@.group == 'general')].keys[?(@.key == 'event-title')].value", contains("Sagra 2026")))
+                .andExpect(jsonPath("$[?(@.group == 'order')].keys[?(@.key == 'take-away-enabled')].value", contains("false")));
     }
 
     @Test
     @DataSet(value = {"users.yml", "app_configurations.yml"}, cleanBefore = true)
-    public void admin_can_update_optional_svg_configuration() throws Exception {
+    public void admin_can_update_required_svg_configuration() throws Exception {
         this.mockMvc.perform(put("/v1/configurations/general/logo-svg")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
@@ -132,7 +128,8 @@ public class AppConfigurationTest extends CommonTest {
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.key", is("logo-svg")))
-                .andExpect(jsonPath("$.type", is("STRING")));
+                .andExpect(jsonPath("$.type", is("STRING")))
+                .andExpect(jsonPath("$.required", is(true)));
 
         this.mockMvc.perform(put("/v1/configurations/general/logo-svg")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -142,8 +139,7 @@ public class AppConfigurationTest extends CommonTest {
                                   "value": null
                                 }
                                 """))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.key", is("logo-svg")));
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -178,6 +174,42 @@ public class AppConfigurationTest extends CommonTest {
                                 }
                                 """))
                 .andExpect(status().isBadRequest());
+
+        this.mockMvc.perform(put("/v1/configurations/general/event-title")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "value": null
+                                }
+                                """))
+                .andExpect(status().isBadRequest());
+
+        this.mockMvc.perform(put("/v1/configurations/general/event-title")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "value": "   "
+                                }
+                                """))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DataSet(value = {"users.yml", "app_configurations.yml"}, cleanBefore = true)
+    public void optional_date_configurations_can_be_set_to_null() throws Exception {
+        this.mockMvc.perform(put("/v1/configurations/general/date-start")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "value": null
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.key", is("date-start")))
+                .andExpect(jsonPath("$.required", is(false)));
     }
 
     @Test

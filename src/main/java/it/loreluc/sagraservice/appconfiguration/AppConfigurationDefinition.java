@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Optional;
 
 public enum AppConfigurationDefinition {
-    GENERAL_NAME("general", "name", AppConfigurationType.STRING),
-    GENERAL_DATE_START("general", "date-start", AppConfigurationType.DATE),
-    GENERAL_DATE_END("general", "date-end", AppConfigurationType.DATE),
+    GENERAL_EVENT_TITLE("general", "event-title", AppConfigurationType.STRING),
+    GENERAL_DATE_START("general", "date-start", AppConfigurationType.DATE, false),
+    GENERAL_DATE_END("general", "date-end", AppConfigurationType.DATE, false),
     GENERAL_LOGO_SVG("general", "logo-svg", AppConfigurationType.STRING),
     PRINT_SPLIT_BY("print", "split-by", AppConfigurationType.STRING, List.of("none", "course", "department")),
     PRINT_FORMAT("print", "format", AppConfigurationType.STRING, List.of("A4", "A5")),
@@ -23,16 +23,26 @@ public enum AppConfigurationDefinition {
     private final String group;
     private final String key;
     private final AppConfigurationType type;
+    private final boolean required;
     private final List<String> allowedValues;
 
     AppConfigurationDefinition(String group, String key, AppConfigurationType type) {
-        this(group, key, type, List.of());
+        this(group, key, type, true, List.of());
+    }
+
+    AppConfigurationDefinition(String group, String key, AppConfigurationType type, boolean required) {
+        this(group, key, type, required, List.of());
     }
 
     AppConfigurationDefinition(String group, String key, AppConfigurationType type, List<String> allowedValues) {
+        this(group, key, type, true, allowedValues);
+    }
+
+    AppConfigurationDefinition(String group, String key, AppConfigurationType type, boolean required, List<String> allowedValues) {
         this.group = group;
         this.key = key;
         this.type = type;
+        this.required = required;
         this.allowedValues = allowedValues;
     }
 
@@ -46,6 +56,10 @@ public enum AppConfigurationDefinition {
 
     public AppConfigurationType getType() {
         return type;
+    }
+
+    public boolean isRequired() {
+        return required;
     }
 
     public List<String> getAllowedValues() {
@@ -66,7 +80,10 @@ public enum AppConfigurationDefinition {
 
     public boolean isValidValue(String value) {
         if (value == null) {
-            return true;
+            return !required;
+        }
+        if (required && type == AppConfigurationType.STRING && value.isEmpty()) {
+            return false;
         }
         if (!allowedValues.isEmpty() && !allowedValues.contains(value)) {
             return false;
