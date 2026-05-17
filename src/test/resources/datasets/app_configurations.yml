@@ -17,7 +17,7 @@ app_configurations:
     config_value: null
   - id: 5
     group_name: print
-    config_key: group-by
+    config_key: split-by
     config_value: none
   - id: 6
     group_name: print

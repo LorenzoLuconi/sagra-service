@@ -276,7 +276,7 @@
 
         <insert tableName="app_configurations">
             <column name="group_name" value="print"/>
-            <column name="config_key" value="group-by"/>
+            <column name="config_key" value="split-by"/>
             <column name="config_value" value="none"/>
         </insert>
         <insert tableName="app_configurations">

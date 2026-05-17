@@ -41,9 +41,9 @@ public class AppConfigurationTest extends CommonTest {
                 .andExpect(jsonPath("$.type", is("STRING")))
                 .andExpect(jsonPath("$.allowedValues", hasSize(0)));
 
-        this.mockMvc.perform(get("/v1/configurations/print/group-by").accept(MediaType.APPLICATION_JSON))
+        this.mockMvc.perform(get("/v1/configurations/print/split-by").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.key", is("group-by")))
+                .andExpect(jsonPath("$.key", is("split-by")))
                 .andExpect(jsonPath("$.allowedValues", hasSize(3)))
                 .andExpect(jsonPath("$.allowedValues[0]", is("none")))
                 .andExpect(jsonPath("$.allowedValues[1]", is("course")))
@@ -149,7 +149,7 @@ public class AppConfigurationTest extends CommonTest {
     @Test
     @DataSet(value = {"users.yml", "app_configurations.yml"}, cleanBefore = true)
     public void invalid_configuration_value_returns_bad_request() throws Exception {
-        this.mockMvc.perform(put("/v1/configurations/print/group-by")
+        this.mockMvc.perform(put("/v1/configurations/print/split-by")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("""

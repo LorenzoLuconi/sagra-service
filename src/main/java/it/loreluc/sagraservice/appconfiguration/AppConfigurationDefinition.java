@@ -11,7 +11,7 @@ public enum AppConfigurationDefinition {
     GENERAL_DATE_START("general", "date-start", AppConfigurationType.DATE),
     GENERAL_DATE_END("general", "date-end", AppConfigurationType.DATE),
     GENERAL_LOGO_SVG("general", "logo-svg", AppConfigurationType.STRING),
-    PRINT_GROUP_BY("print", "group-by", AppConfigurationType.STRING, List.of("none", "course", "department")),
+    PRINT_SPLIT_BY("print", "split-by", AppConfigurationType.STRING, List.of("none", "course", "department")),
     PRINT_FORMAT("print", "format", AppConfigurationType.STRING, List.of("A4", "A5")),
     PRINT_CUSTOMER_COPY("print", "customer-copy", AppConfigurationType.BOOLEAN),
     ORDER_NAME_MANDATORY("order", "name-mandatory", AppConfigurationType.BOOLEAN),
