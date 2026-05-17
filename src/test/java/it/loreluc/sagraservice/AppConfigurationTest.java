@@ -106,7 +106,7 @@ public class AppConfigurationTest extends CommonTest {
                                     {
                                       "group": "order",
                                       "keys": [
-                                        { "key": "take-away-available", "value": "false" }
+                                        { "key": "take-away-enabled", "value": "false" }
                                       ]
                                     }
                                   ]
@@ -116,7 +116,7 @@ public class AppConfigurationTest extends CommonTest {
                 .andExpect(jsonPath("$[0].group", is("general")))
                 .andExpect(jsonPath("$[0].keys[3].value", is("Sagra 2026")))
                 .andExpect(jsonPath("$[1].group", is("order")))
-                .andExpect(jsonPath("$[1].keys[4].value", is("false")));
+                .andExpect(jsonPath("$[1].keys[3].value", is("false")));
     }
 
     @Test

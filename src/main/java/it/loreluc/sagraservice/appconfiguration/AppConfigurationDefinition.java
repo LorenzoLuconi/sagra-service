@@ -15,11 +15,11 @@ public enum AppConfigurationDefinition {
     PRINT_FORMAT("print", "format", AppConfigurationType.STRING, List.of("A4", "A5")),
     PRINT_CUSTOMER_COPY("print", "customer-copy", AppConfigurationType.BOOLEAN),
     ORDER_NAME_MANDATORY("order", "name-mandatory", AppConfigurationType.BOOLEAN),
-    ORDER_TAKE_AWAY_AVAILABLE("order", "take-away-available", AppConfigurationType.BOOLEAN),
+    ORDER_TAKE_AWAY_ENABLED("order", "take-away-enabled", AppConfigurationType.BOOLEAN),
     ORDER_SERVICE_ENABLED("order", "service-enabled", AppConfigurationType.BOOLEAN),
     ORDER_SERVICE_COST("order", "service-cost", AppConfigurationType.DECIMAL),
-    ORDER_PAYMENT_CREDIT_CARD("order", "payment-credit-card", AppConfigurationType.BOOLEAN);
 
+    ;
     private final String group;
     private final String key;
     private final AppConfigurationType type;

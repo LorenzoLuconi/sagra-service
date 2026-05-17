@@ -33,7 +33,7 @@ app_configurations:
     config_value: "true"
   - id: 9
     group_name: order
-    config_key: take-away-available
+    config_key: take-away-enabled
     config_value: "true"
   - id: 10
     group_name: order
@@ -43,7 +43,3 @@ app_configurations:
     group_name: order
     config_key: service-cost
     config_value: "1.0"
-  - id: 12
-    group_name: order
-    config_key: payment-credit-card
-    config_value: "false"

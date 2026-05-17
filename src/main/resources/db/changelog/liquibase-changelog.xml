@@ -297,7 +297,7 @@
         </insert>
         <insert tableName="app_configurations">
             <column name="group_name" value="order"/>
-            <column name="config_key" value="take-away-available"/>
+            <column name="config_key" value="take-away-enabled"/>
             <column name="config_value" value="true"/>
         </insert>
         <insert tableName="app_configurations">
@@ -309,11 +309,6 @@
             <column name="group_name" value="order"/>
             <column name="config_key" value="service-cost"/>
             <column name="config_value" value="1.0"/>
-        </insert>
-        <insert tableName="app_configurations">
-            <column name="group_name" value="order"/>
-            <column name="config_key" value="payment-credit-card"/>
-            <column name="config_value" value="false"/>
         </insert>
     </changeSet>
 </databaseChangeLog>
