@@ -83,16 +83,9 @@ public class OrderService {
     @Transactional(rollbackFor = Throwable.class)
     public Order updateOrder(Long orderId, OrderRequest orderRequest) {
         final Order order = getOrderById(orderId);
-        validateOrderRequest(orderRequest);
 
+        validateOrderRequest(orderRequest);
         orderMapper.updateEntity(order, orderRequest);
-        applyConfiguredOrderValues(order, orderRequest);
-//        final Optional<BigDecimal> discountRateOptional = getDiscountRate(orderRequest);
-//        if  (discountRateOptional.isPresent()) {
-//            order.setDiscountRate(discountRateOptional.get());
-//        } else {
-//            order.setDiscountRate(null);
-//        }
 
         final Map<Long, OrderProduct> orderedProductsMap = order.getProducts().stream()
                 .collect(Collectors.toMap(o -> o.getProduct().getId(), Function.identity()));
