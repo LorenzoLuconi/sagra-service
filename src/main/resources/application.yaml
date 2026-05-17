@@ -31,7 +31,6 @@ sagra-service:
       - http://localhost:3000
     max-age: 86400
     allow-credentials: true
-  service-cost: 0.5
   default-admin:
     username: admin
     name: Administrator

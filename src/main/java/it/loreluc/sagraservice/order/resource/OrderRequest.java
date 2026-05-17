@@ -5,7 +5,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
@@ -16,7 +15,6 @@ import java.util.List;
 @Schema(name = "OrderRequest")
 public class OrderRequest {
 
-    @NotEmpty
     @Length(max = 128)
     private String customer;
 
@@ -25,7 +23,7 @@ public class OrderRequest {
 
     private boolean takeAway = false;
 
-    @Min(0) @NotNull
+    @Min(0)
     private Integer serviceNumber;
 
     @Min(0) @Max(100)

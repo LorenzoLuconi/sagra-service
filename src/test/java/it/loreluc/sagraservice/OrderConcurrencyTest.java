@@ -27,7 +27,7 @@ public class OrderConcurrencyTest extends CommonTest {
     private ProductRepository productRepository;
 
     @Test
-    @DataSet(value = {"courses.yml", "departments.yml", "products.yml", "users.yml"}, cleanBefore = true)
+    @DataSet(value = {"courses.yml", "departments.yml", "products.yml", "users.yml", "app_configurations.yml"}, cleanBefore = true)
     public void parallel_order_creation_keeps_stock_consistent() throws Exception {
         final int initialAvailability = 30;
         final int attempts = 60;
@@ -45,7 +45,7 @@ public class OrderConcurrencyTest extends CommonTest {
     }
 
     @Test
-    @DataSet(value = {"courses.yml", "departments.yml", "products.yml", "users.yml"}, cleanBefore = true)
+    @DataSet(value = {"courses.yml", "departments.yml", "products.yml", "users.yml", "app_configurations.yml"}, cleanBefore = true)
     public void parallel_order_updates_keep_stock_consistent() throws Exception {
         final int initialAvailability = 30;
         final List<Long> orderIds = new ArrayList<>();

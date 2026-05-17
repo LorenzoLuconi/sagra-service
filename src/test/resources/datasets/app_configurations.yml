@@ -42,4 +42,4 @@ app_configurations:
   - id: 11
     group_name: order
     config_key: service-cost
-    config_value: "1.0"
+    config_value: "0.5"

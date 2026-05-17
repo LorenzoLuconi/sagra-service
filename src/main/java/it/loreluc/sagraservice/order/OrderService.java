@@ -5,7 +5,7 @@ import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.Wildcard;
 import com.querydsl.jpa.impl.JPAQuery;
-import it.loreluc.sagraservice.config.SagraSettings;
+import it.loreluc.sagraservice.appconfiguration.AppRuntimeConfiguration;
 import it.loreluc.sagraservice.discount.DiscountService;
 import it.loreluc.sagraservice.error.*;
 import it.loreluc.sagraservice.jpa.*;
@@ -39,7 +39,7 @@ public class OrderService {
     private final OrderMapper orderMapper;
     private final OrderRepository orderRepository;
     private final ProductService productService;
-    private final SagraSettings settings;
+    private final AppRuntimeConfiguration appRuntimeConfiguration;
     private final UsersRepository usersRepository;
     private final EntityManager entityManager;
     private final DiscountService discountService;
@@ -53,7 +53,7 @@ public class OrderService {
 
         validateOrderRequest(orderRequest);
         final Order order = orderMapper.toEntity(orderRequest);
-        order.setServiceCost(settings.getServiceCost());
+        applyConfiguredOrderValues(order, orderRequest);
         order.setUser(usersRepository.findById(username).orElseThrow(() -> new RuntimeException("User not found: " + username)));
 
         int idx = 0;
@@ -86,6 +86,7 @@ public class OrderService {
         validateOrderRequest(orderRequest);
 
         orderMapper.updateEntity(order, orderRequest);
+        applyConfiguredOrderValues(order, orderRequest);
 //        final Optional<BigDecimal> discountRateOptional = getDiscountRate(orderRequest);
 //        if  (discountRateOptional.isPresent()) {
 //            order.setDiscountRate(discountRateOptional.get());
@@ -204,13 +205,16 @@ public class OrderService {
     }
 
     private void validateOrderRequest(OrderRequest orderRequest) {
+        validateCustomer(orderRequest);
+        validateTakeAway(orderRequest);
+        validateServiceNumber(orderRequest);
 
         final Set<Long> orderedProductsSet = orderRequest.getProducts().stream().map(OrderProductRequest::getProductId).collect(Collectors.toSet());
         if ( orderedProductsSet.size() != orderRequest.getProducts().size() ) {
             throw new SagraBadRequestException("Sono presenti dei prodotti inseriti più volte nell'ordine");
         }
 
-        if ( orderRequest.isTakeAway() && orderRequest.getServiceNumber() > 0 ) {
+        if ( orderRequest.isTakeAway() && orderRequest.getServiceNumber() != null && orderRequest.getServiceNumber() > 0 ) {
             log.debug("Tentativo di creare/aggiornare un ordine da asporto con indicazione dei coperti: {}", orderRequest);
             throw new SagraBadRequestException(
                     InvalidValue.builder()
@@ -222,11 +226,41 @@ public class OrderService {
         }
     }
 
-    private BigDecimal calculateServiceCost(OrderRequest orderRequest) {
-        if ( orderRequest.getServiceNumber() > 0 && settings.getServiceCost().compareTo(BigDecimal.ZERO) > 0) {
-            return settings.getServiceCost().multiply(new BigDecimal(orderRequest.getServiceNumber()));
+    private void validateCustomer(OrderRequest orderRequest) {
+        if (appRuntimeConfiguration.isOrderNameMandatory()
+                && (orderRequest.getCustomer() == null || orderRequest.getCustomer().isEmpty())) {
+            throw new SagraBadRequestException(InvalidValue.of("customer", "Cliente obbligatorio", orderRequest.getCustomer()));
         }
-        return BigDecimal.ZERO;
+    }
+
+    private void validateTakeAway(OrderRequest orderRequest) {
+        if (!appRuntimeConfiguration.isOrderTakeAwayEnabled() && orderRequest.isTakeAway()) {
+            throw new SagraBadRequestException(InvalidValue.of("takeAway", "Asporto non abilitato", orderRequest.isTakeAway()));
+        }
+    }
+
+    private void validateServiceNumber(OrderRequest orderRequest) {
+        final boolean serviceEnabled = appRuntimeConfiguration.isOrderServiceEnabled();
+        if (serviceEnabled && orderRequest.getServiceNumber() == null) {
+            throw new SagraBadRequestException(InvalidValue.of("serviceNumber", "Coperti obbligatori"));
+        }
+        if (!serviceEnabled && orderRequest.getServiceNumber() != null && orderRequest.getServiceNumber() > 0) {
+            throw new SagraBadRequestException(InvalidValue.of("serviceNumber", "Coperti non abilitati", orderRequest.getServiceNumber()));
+        }
+    }
+
+    private void applyConfiguredOrderValues(Order order, OrderRequest orderRequest) {
+        if (appRuntimeConfiguration.isOrderServiceEnabled()) {
+            order.setServiceNumber(orderRequest.getServiceNumber());
+            order.setServiceCost(appRuntimeConfiguration.orderServiceCost());
+        } else {
+            order.setServiceNumber(0);
+            order.setServiceCost(BigDecimal.ZERO);
+        }
+
+        if (!appRuntimeConfiguration.isOrderTakeAwayEnabled()) {
+            order.setTakeAway(false);
+        }
     }
 
     private  static final BigDecimal ONE_HUNDRED = new BigDecimal(100);
