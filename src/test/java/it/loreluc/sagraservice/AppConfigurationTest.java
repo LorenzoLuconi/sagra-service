@@ -222,8 +222,26 @@ public class AppConfigurationTest extends CommonTest {
     @Test
     @WithMockUser(username = "test", roles = {"CASHIER"})
     @DataSet(value = {"users.yml", "app_configurations.yml"}, cleanBefore = true)
-    public void cashier_cannot_manage_configurations() throws Exception {
+    public void cashier_can_read_configuration() throws Exception {
         this.mockMvc.perform(get("/v1/configurations").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = "test", roles = {"CASHIER"})
+    @DataSet(value = {"users.yml", "app_configurations.yml"}, cleanBefore = true)
+    public void cashier_cannot_update_configuration() throws Exception {
+        this.mockMvc.perform(put("/v1/configurations/general")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "keys": [
+                                    { "key": "event-title", "value": "Sagra 2026" },
+                                    { "key": "date-start", "value": "2026-06-01" }
+                                  ]
+                                }
+                                """))
                 .andExpect(status().isForbidden());
     }
 }
