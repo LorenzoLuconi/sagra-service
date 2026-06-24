@@ -21,6 +21,8 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 
+import static org.springframework.http.HttpMethod.GET;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -40,8 +42,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers("/error", "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/v1/monitors/{monitorId}/view","/monitors/**").permitAll()
+                        .requestMatchers(GET, "/v1/monitors/{monitorId}/view","/monitors/**").permitAll()
                         .requestMatchers("/v1/users/**").hasRole("ADMIN")
+                        .requestMatchers(GET, "/v1/configurations/**").authenticated()
                         .requestMatchers("/v1/configurations/**").hasRole("ADMIN")
                         .requestMatchers("/v1/auth/**").authenticated()
                         .anyRequest().authenticated()
