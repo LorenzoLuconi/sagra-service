@@ -100,16 +100,16 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Transactional
     public void ensureDefaultAdmin() {
-        final String username = sagraSettings.getDefaultAdmin().getUsername();
+        final String username = sagraSettings.getAdmin().getUsername();
         if (usersRepository.findByUsername(username).isPresent()) {
             return;
         }
 
         createUser(
                 username,
-                sagraSettings.getDefaultAdmin().getName(),
+                sagraSettings.getAdmin().getName(),
                 Role.admin,
-                sagraSettings.getDefaultAdmin().getPassword()
+                sagraSettings.getAdmin().getPassword()
         );
     }
 

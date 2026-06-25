@@ -31,10 +31,8 @@ sagra-service:
       - http://localhost:3000
     max-age: 86400
     allow-credentials: true
-  default-admin:
-    username: admin
+  admin:
     name: Administrator
-    #password: admin1234
 
 ---
 spring:
@@ -63,7 +61,7 @@ spring:
     init:
       mode: never
 sagra-service:
-  default-admin:
+  admin:
     username: admin
     name: Administrator
     password: admin1234

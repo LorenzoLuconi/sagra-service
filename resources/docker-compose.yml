@@ -7,11 +7,6 @@ services:
       MYSQL_USER: sagra
       MYSQL_PASSWORD: sagra
       MYSQL_ROOT_PASSWORD: root
-    ports:
-      - "3306:3306"
-    command:
-      - --character-set-server=utf8mb4
-      - --collation-server=utf8mb4_unicode_ci
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
       interval: 5s
@@ -20,11 +15,9 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
 
-  app:
-    image: maven:3.9.9-eclipse-temurin-21
-    container_name: sagra-app
-    working_dir: /workspace
-    command: ["./mvnw", "spring-boot:run", "-DskipTests"]
+  service:
+    image: loreluc/sagra-service:${SAGRA_SERVICE_VERSION}
+    container_name: sagra-service
     depends_on:
       mysql:
         condition: service_healthy
@@ -33,33 +26,18 @@ services:
       SPRING_DATASOURCE_USERNAME: sagra
       SPRING_DATASOURCE_PASSWORD: sagra
       SERVER_ADDRESS: 0.0.0.0
-      SAGRA_SERVICE_DEFAULT_ADMIN_PASSWORD: admin
+      SAGRA_SERVICE_DEFAULT_ADMIN_USERNAME: ${ADMIN_USERNAME}
+      SAGRA_SERVICE_DEFAULT_ADMIN_PASSWORD: ${ADMIN_PASSWORD}
     ports:
       - "8080:8080"
-    volumes:
-      - ..:/workspace
-      - maven-repo:/root/.m2
 
-  mysql-seed:
-    image: mysql:8.4
-    container_name: sagra-mysql-seed
-    depends_on:
-      mysql:
-        condition: service_healthy
-      app:
-        condition: service_started
-    working_dir: /seed
-    volumes:
-      - ./data-test.sql:/seed/data-test.sql:ro
-    entrypoint:
-      - sh
-      - -c
-      - |
-        until mysql --default-character-set=utf8mb4 -hmysql -usagra -psagra -D sagra -Nse "select 1 from information_schema.tables where table_schema='sagra' and table_name='users'" | grep -q 1; do
-          sleep 2
-        done
-        mysql --default-character-set=utf8mb4 -hmysql -usagra -psagra -D sagra < /seed/data-test.sql
+  web:
+    image: loreluc/sagra-web:${SAGRA_WEB_VERSION}
+    container_name: sagra-web
+    depends_on: service
+    ports:
+      - "3000:80"
+
 
 volumes:
   mysql-data:
-  maven-repo:

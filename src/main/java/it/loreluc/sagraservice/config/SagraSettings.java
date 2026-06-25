@@ -14,7 +14,7 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties(prefix = "sagra-service")
 public class SagraSettings {
     @NotNull @Valid
-    private DefaultAdmin defaultAdmin = new DefaultAdmin();
+    private DefaultAdmin admin = new DefaultAdmin();
 
     @Data
     public static class DefaultAdmin {
