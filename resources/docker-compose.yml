@@ -16,7 +16,7 @@ services:
       - mysql-data:/var/lib/mysql
 
   service:
-    image: loreluc/sagra-service:${SAGRA_SERVICE_VERSION}
+    image: loreluc73/sagra-service:${SAGRA_SERVICE_VERSION}
     container_name: sagra-service
     depends_on:
       mysql:
@@ -26,15 +26,17 @@ services:
       SPRING_DATASOURCE_USERNAME: sagra
       SPRING_DATASOURCE_PASSWORD: sagra
       SERVER_ADDRESS: 0.0.0.0
-      SAGRA_SERVICE_DEFAULT_ADMIN_USERNAME: ${ADMIN_USERNAME}
-      SAGRA_SERVICE_DEFAULT_ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      SAGRA_SERVICE_ADMIN_USERNAME: ${ADMIN_USERNAME}
+      SAGRA_SERVICE_ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      # SAGRA_SERVICE_CORS_ALLOWED_ORIGIN: "http://*:3000"
     ports:
       - "8080:8080"
 
   web:
-    image: loreluc/sagra-web:${SAGRA_WEB_VERSION}
+    image: loreluc73/sagra-web:${SAGRA_WEB_VERSION}
     container_name: sagra-web
-    depends_on: service
+    depends_on:
+      - service
     ports:
       - "3000:80"
 

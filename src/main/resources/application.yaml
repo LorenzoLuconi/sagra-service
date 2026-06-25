@@ -3,8 +3,6 @@ spring:
     name: @project.name@
   liquibase:
     change-log: classpath:/db/changelog/liquibase-changelog.xml
-  profiles:
-    active: h2
   jackson:
     default-property-inclusion: non_null
   mvc:
