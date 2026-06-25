@@ -7,17 +7,47 @@ Richiede:
  - Java 21
  - MySQL
 
-Avvio applicazione per test:
+## Avvio applicazione tramite docker compose
 
 ```
 cd resources
 docker compose up -d 
 ```
 
-Questo crea un servizio accessibile tramitel la porta 8080 con database MySQL già con dei dati dentro, con due utenti già presenti:
+Il file `resources/docker-compose.yml` avvia tre servizi:
 
-- admin / admin con ruolo amministratore
-- lorenzo / lorenzo con ruolo cassiere
+- `mysql`: database MySQL 8.4.
+- `service`: backend REST `sagra-service`.
+- `web`: frontend `sagra-web`.
+
+Le immagini Docker del backend e del frontend sono configurate tramite variabili d'ambiente. Docker Compose legge automaticamente un eventuale file `.env` presente nella cartella `resources`.
+
+Esempio:
+
+```env
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin
+SAGRA_SERVICE_VERSION=1.1
+SAGRA_WEB_VERSION=1.1
+SPRINGDOC_API_DOCS_ENABLED=false
+CORS_ALLOWED_ORIGINS=http://localhost:3000
+API_URL=http://localhost:8080
+```
+
+Variabili supportate da `resources/docker-compose.yml`:
+
+| Variabile | Obbligatoria | Default | Descrizione |
+| --- | --- | --- | --- |
+| `SAGRA_SERVICE_VERSION` | Si | Nessuno | Tag dell'immagine Docker `loreluc73/sagra-service`. |
+| `SAGRA_WEB_VERSION` | Si | Nessuno | Tag dell'immagine Docker `loreluc73/sagra-web`. |
+| `ADMIN_USERNAME` | Si | Nessuno | Username dell'utente amministratore iniziale del servizio. |
+| `ADMIN_PASSWORD` | Si | Nessuno | Password dell'utente amministratore iniziale del servizio. |
+| `SPRINGDOC_API_DOCS_ENABLED` | No | `false` | Abilita o disabilita gli endpoint OpenAPI/Swagger del backend. |
+| `CORS_ALLOWED_ORIGINS` | No | `http://localhost:3000` | Origini consentite per le chiamate CORS verso il backend. |
+| `API_URL` | No | `http://localhost:8080` | URL del backend usato dal frontend. |
+
+Nel file Compose i default sono definiti con la sintassi `${VARIABILE:-valore}`: il valore di default viene usato quando la variabile non è definita oppure è vuota.
+
 
 E' disponibile documentazione OpenAPI e Swagger all'indirizzo:
 http://localhost:8080/swagger-ui/index.html
@@ -118,7 +148,6 @@ Questo progetto è distribuito sotto licenza [GNU Affero General Public License 
 
 
 *TODO*
-
 
 
 
