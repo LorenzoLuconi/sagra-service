@@ -28,13 +28,16 @@ services:
       SERVER_ADDRESS: 0.0.0.0
       SAGRA_SERVICE_ADMIN_USERNAME: ${ADMIN_USERNAME}
       SAGRA_SERVICE_ADMIN_PASSWORD: ${ADMIN_PASSWORD}
-      # SAGRA_SERVICE_CORS_ALLOWED_ORIGIN: "http://*:3000"
+      SPRINGDOC_API_DOCS_ENABLED: ${SPRINGDOC_API_DOCS_ENABLED:-false}
+      SAGRA_SERVICE_CORS_ALLOWED_ORIGINS: "${CORS_ALLOWED_ORIGINS:-http://localhost:3000}"
     ports:
       - "8080:8080"
 
   web:
     image: loreluc73/sagra-web:${SAGRA_WEB_VERSION}
     container_name: sagra-web
+    environment:
+      API_URL: ${API_URL:-http://localhost:8080}
     depends_on:
       - service
     ports:
