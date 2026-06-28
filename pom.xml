@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>it.loreluc</groupId>
 	<artifactId>sagra-service</artifactId>
-	<version>1.1-SNAPSHOT</version>
+	<version>1.1</version>
 	<name>sagra-service</name>
 	<description>Demo project for Spring Boot</description>
 	<licenses>
